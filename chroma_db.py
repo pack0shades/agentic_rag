@@ -8,11 +8,13 @@ import fitz  # PyMuPDF
 from dotenv import load_dotenv
 load_dotenv()
 import os
+from typing import List
+from time import time
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def custom_chunk_document_pdf(pdf_path, chunk_size=500, overlap=100):
+def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100)-> List[str]:
     table_chunks = []
     text_chunks = []
     
@@ -36,7 +38,7 @@ def custom_chunk_document_pdf(pdf_path, chunk_size=500, overlap=100):
     return final_text_chunks + table_chunks
 
 
-def embed_and_store_chunks(doc_id, pdf_path, collection):
+def embed_and_store_chunks(doc_id, pdf_path: str, collection):
     """
     Embeds document chunks and stores them in Chroma DB.
     
@@ -65,7 +67,7 @@ def embed_and_store_chunks(doc_id, pdf_path, collection):
 
 if __name__ == "__main__":
         # Initialize Chroma DB through command chroma run --path /db_path
-    pdf_path = './data/_10-K-Q4-2023-As-Filed.pdf'
+    pdf_path = './pdfs/nvidia.pdf'
     client = chromadb.HttpClient(host="localhost", port=8000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
         api_key=openai.api_key,

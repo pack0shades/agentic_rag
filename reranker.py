@@ -1,12 +1,14 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import args
 
+model_name="distilbert-base-uncased-finetuned-sst-2-english"
 class DocumentReranker:
     def __init__(self, model_name="distilbert-base-uncased-finetuned-sst-2-english"):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-    def rerank_documents(self, query, documents):
+    def rerank_documents(self, query, documents)-> list[str]:
         
         query_encoding = self.tokenizer(query, return_tensors='pt')
         scores = []

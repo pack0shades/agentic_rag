@@ -3,7 +3,7 @@ from chromadb.config import Settings
 import time
 import openai
 import os
-
+from main import args
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_collection():
@@ -15,7 +15,7 @@ def get_collection():
     collection = chroma_client.get_collection('document_embeddings', embedding_function=openai_ef)
     return collection
 
-def retrieve_documents(collection, query, n_results=5):
+def retrieve_documents(collection, query: str, n_results=args.retrieved_docs)-> str:
     results = collection.query(query_texts=[query], n_results=n_results)
     return results["documents"][0]
 
