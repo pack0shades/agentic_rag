@@ -65,7 +65,7 @@ def embed_and_store_chunks(doc_id, pdf_path, collection):
 
 if __name__ == "__main__":
         # Initialize Chroma DB through command chroma run --path /db_path
-    pdf_path = '/home/pragay/interiit/_10-K-Q4-2023-As-Filed.pdf'
+    pdf_path = './data/_10-K-Q4-2023-As-Filed.pdf'
     client = chromadb.HttpClient(host="localhost", port=8000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
         api_key=openai.api_key,

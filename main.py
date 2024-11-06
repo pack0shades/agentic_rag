@@ -6,12 +6,17 @@ from reranker import *
 from openai import OpenAI
 from typing import List
 
-def get_context(query: str)->str:
+def get_context(collection, reranker, query: str):
     # Retrieve documents
-    retrieved_docs = retrieve_documents(query)
+    retrieved_docs = retrieve_documents(collection, query) ## list
     # Rerank documents
-    reranked_docs = rerank_documents(query, retrieved_docs)
-    return reranked_docs[0][0]
+    reranked_docs = reranker.rerank_documents(query, retrieved_docs)
+
+    context = "";
+    for idx, doc in enumerate(reranked_docs):
+        context += f"Rank {idx + 1}: {doc}\n"
+    return context
+
 
 def generate_response_from_context(quer, context):
     prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
@@ -35,16 +40,18 @@ def generate_response_from_context(quer, context):
     return (completion.choices[0].message.content)
     
 
-def pipeline(query):
-    context = get_context(query)
+def pipeline(collection, reranker, query):
+    context = get_context(collection, reranker, query)
     # print(f"ye rha context:::{context}")
     final_context = context_to_agent(context)
     res = generate_response_from_context(query, final_context)
     return res
 
 def main():
+    collection = get_collection()
+    reranker_model = DocumentReranker()
     query = input("Enter your query: ")
-    res = pipeline(query)
+    res = pipeline(collection, reranker_model, query)
     print (res)
 
 if __name__ == "__main__":
