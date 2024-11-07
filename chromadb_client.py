@@ -3,7 +3,10 @@ from chromadb.config import Settings
 import time
 import openai
 import os
-from main import args
+from main import get_args
+
+args = get_args()
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_collection():

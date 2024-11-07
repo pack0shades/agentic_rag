@@ -1,6 +1,8 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import args
+from main import get_args
+
+args = get_args()
 
 model_name="distilbert-base-uncased-finetuned-sst-2-english"
 class DocumentReranker:
