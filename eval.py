@@ -29,7 +29,7 @@ def judge_llm(ground_truth, generated_answer):
 
 def find_pdf(data_dir: str, filename: str)->str:
     filename = filename + ".pdf"
-    for dirpath, part,dirnames, pdfs in os.walk(data_dir):
+    for dirpath, dirnames, pdfs in os.walk(data_dir):
         for file in pdfs:
             if file == filename:
                 return os.path.join(dirpath, file)
@@ -37,6 +37,39 @@ def find_pdf(data_dir: str, filename: str)->str:
                 print(f"File {filename} not found in {dirpath}.AAAAAAAAAAAaaaaaaaaaaaaaAAAAAAAAAAAAAAAAA")
                 return None
             
+import re
+import json
+import os
+
+def get_collection_name(file_name, json_file='collection_names.json'):
+    # Remove the file extension
+    collection_name = re.sub(r'\.pdf$', '', file_name, flags=re.IGNORECASE)
+    # Replace invalid characters with underscores
+    collection_name = re.sub(r'[^a-zA-Z0-9_-]', '_', collection_name)
+    # Ensure it doesn't start or end with an invalid character
+    collection_name = collection_name.strip('_-')
+    # Limit to 63 characters
+    collection_name = collection_name[:63]
+    
+    # Store the original filename and new collection name in a JSON file
+    if os.path.exists(json_file):
+        # Load existing data
+        with open(json_file, 'r') as f:
+            collection_data = json.load(f)
+    else:
+        # Initialize new data
+        collection_data = {}
+
+    # Add or update the mapping
+    collection_data[file_name] = collection_name
+    
+    # Save the updated data back to the JSON file
+    with open(json_file, 'w') as f:
+        json.dump(collection_data, f, indent=4)
+    
+    return collection_name
+
+
 
 
 def main():
@@ -48,11 +81,13 @@ def main():
         query = row['question']
         print(f"question:{query}")
         filename = row['id']
-        pdf_loc = find_pdf(filename)
-
-        collection, collection_present = get_collection(filename)
+        data_dir = '/home/pragay/interiit/CUAD_v1/'
+        pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
+        collection_name = get_collection_name(filename)
+        print(f"collection name:{collection_name}")
+        collection, collection_present = get_collection(collection_name)
         if not collection_present:
-            embed_and_store_chunks(pdf_path=pdf_loc,doc_id=filename, collection=collection)
+            embed_and_store_chunks(pdf_path=pdf_loc,doc_id=collection_name, collection=collection)
             print(f"collection was not already present... added and stored embeddings")
         print(f"collection")
         reranker_model = DocumentReranker()

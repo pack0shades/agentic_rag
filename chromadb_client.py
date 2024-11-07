@@ -27,7 +27,8 @@ def retrieve_documents(collection, query: str, n_results=args.retrieved_docs)-> 
     return results["documents"][0]
 
 def main(query):
-    retrieved_docs = retrieve_documents(get_collection(), query)
+    collection, collection_present = get_collection()
+    retrieved_docs = retrieve_documents(collection, query)
     return retrieved_docs
 
 if __name__ == "__main__":
