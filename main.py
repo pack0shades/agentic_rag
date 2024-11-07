@@ -17,12 +17,13 @@ def get_context(collection, reranker, query: str)-> str:
     if args.use_reranker:
     # Rerank documents
         reranked_docs = reranker.rerank_documents(query, retrieved_docs)
-
-    context = ""
-    for idx, doc in enumerate(reranked_docs):
-        context += f"Rank {idx + 1}: {doc}\n"
-    return context
-
+        context = ""
+        for idx, doc in enumerate(reranked_docs):
+            context += f"Rank {idx + 1}: {doc}\n"
+        return context
+    else:
+        return retrieved_docs
+    
 
 def generate_response_from_context(quer: str, context)-> str:
     prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
