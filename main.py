@@ -6,11 +6,10 @@ from reranker import *
 from openai import OpenAI
 from typing import List
 from time import time
+from args import get_args
 
-argparse = argparse.ArgumentParser()
-argparse.add_argument("--use_reranker", type=bool, default=True, help="Use reranker or not")
-argparse.add_argument("--retrieved_docs", type=int, default=5, help="Number of retrieved documents")
-args = argparse.parse_args()
+args = get_args()
+
 
 def get_context(collection, reranker, query: str)-> str:
     # Retrieve documents

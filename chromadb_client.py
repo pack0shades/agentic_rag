@@ -3,7 +3,7 @@ from chromadb.config import Settings
 import time
 import openai
 import os
-from main import get_args
+from args import get_args
 
 args = get_args()
 
