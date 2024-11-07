@@ -1,13 +1,14 @@
 import openai
 import pandas as pd
 import os
+from main import *
 
-
+collection = get_collection()
 def evaluate_answer(ground_truth, generated_answer):
     prompt = f"""
     Ground Truth: "{ground_truth}"
     Generated Answer: "{generated_answer}"
-    Evaluate the similarity of two given text snippets. Input: Ground Truth Text, Predicted Answer Text. Output: 1 if the Predicted Answer Text has the same context as the Ground Truth Text, 0 otherwise.
+    Evaluate the similarity of two given text snippets. Input: Ground Truth Text, Predicted Answer Text. Output: 1 if the Predicted Answer Text has the same context as the Ground Truth Text, 0 otherwise '''do not answer anything except 0 or 1'''.
     """
 
     
@@ -30,7 +31,10 @@ def find_pdf(data_dir: str, filename: str)->str:
             else:
                 print(f"File {filename} not found in {dirpath}.AAAAAAAAAAAaaaaaaaaaaaaaAAAAAAAAAAAAAAAAA")
                 return None
+def get_resp(ans):
 
+
+    
 if __name__ == "__main__":
     df = pd.read_csv("your_file.csv")
 
