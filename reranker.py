@@ -23,7 +23,7 @@ class DocumentReranker:
         
         reranked_docs = sorted(zip(documents, scores), key=lambda x: x[1], reverse=True)
         
-        return [doc for doc, score in reranked_docs]
+        return [doc for doc, _ in reranked_docs]
 
 # Example usage
 if __name__ == "__main__":
