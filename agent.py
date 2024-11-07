@@ -1,9 +1,13 @@
 import openai
 from openai import OpenAI
 import concurrent.futures
+from typing import List
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-openai.api_key = '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'
-def revenue_agent(prompt):
+openai.api_key = os.getenv("OPENAI_API_KEY")
+def revenue_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -13,7 +17,7 @@ def revenue_agent(prompt):
     )
     return response.choices[0].message.content
 
-def income_tax_agent(prompt):
+def income_tax_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -23,7 +27,7 @@ def income_tax_agent(prompt):
     )
     return response.choices[0].message.content  
 
-def legalility_agent(prompt):
+def legalility_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -33,7 +37,7 @@ def legalility_agent(prompt):
     )
     return response.choices[0].message.content 
 
-def assets_agent(prompt):
+def assets_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -44,7 +48,7 @@ def assets_agent(prompt):
     return response.choices[0].message.content
 
 
-def share_agent(prompt):
+def share_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -54,7 +58,7 @@ def share_agent(prompt):
     )
     return response.choices[0].message.content 
    
-def final_agent(prompt):
+def final_agent(prompt: str)-> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -65,7 +69,7 @@ def final_agent(prompt):
     return response.choices[0].message.content  
 
 # Define a function to execute all agents in parallel and combine the results
-def generate_final_prompt(prompt):
+def generate_final_prompt(prompt: str)-> str:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_revenue = executor.submit(revenue_agent, prompt)
         future_income_tax = executor.submit(income_tax_agent, prompt)
