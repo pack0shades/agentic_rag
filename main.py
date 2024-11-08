@@ -25,13 +25,12 @@ def get_context(collection, reranker, query: str) -> str:
         return context
     else:
         return str(retrieved_docs)
-    
+
 
 def generate_response_from_context(query: str, context) -> str:
     agents, meta_agent, final_agent, router = get_agents()
 
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
-
 
 
 def pipeline(collection, reranker, query: str) -> str:
@@ -41,7 +40,8 @@ def pipeline(collection, reranker, query: str) -> str:
 
 
 def main():
-    print(f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
+    print(
+        f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
     collection, collection_present = get_collection('collection-1731096205')
     reranker_model = DocumentReranker()
 

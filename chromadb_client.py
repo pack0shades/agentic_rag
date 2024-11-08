@@ -9,6 +9,7 @@ args = get_args()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
 def get_collection(filename='documentembeddings'):
     chroma_client = chromadb.HttpClient(host='localhost', port=5000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
@@ -16,7 +17,8 @@ def get_collection(filename='documentembeddings'):
         model_name="text-embedding-ada-002"
     )
     print(f"ye rhi list {chroma_client.list_collections()}")
-    collection = chroma_client.get_or_create_collection(name=filename, embedding_function=openai_ef)
+    collection = chroma_client.get_or_create_collection(
+        name=filename, embedding_function=openai_ef)
     collection_list = []
     for i in range(len(chroma_client.list_collections())):
         collection_name = chroma_client.list_collections()[i].name

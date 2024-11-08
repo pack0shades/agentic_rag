@@ -1,3 +1,5 @@
+import re
+import json
 import openai
 import pandas as pd
 import os
@@ -6,6 +8,7 @@ from main import *
 from time import time
 
 args = get_args()
+
 
 def judge_llm(ground_truth, generated_answer):
     prompt1 = f"""
@@ -20,7 +23,6 @@ def judge_llm(ground_truth, generated_answer):
     
     """
 
-    
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -33,6 +35,7 @@ def judge_llm(ground_truth, generated_answer):
     print(f"judge saahab ka decision: {output}")
     return int(output) if output in {"1", "0"} else 0
 
+
 def find_pdf(data_dir: str, filename: str) -> str:
     filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
@@ -40,14 +43,11 @@ def find_pdf(data_dir: str, filename: str) -> str:
             if file == filename:
                 final_path = os.path.join(dirpath, file)
                 return final_path
-    
+
     # If the file is not found, print and return None
     print(f"File {filename} not found in {data_dir}")
     return None
-            
-import re
-import json
-import os
+
 
 def get_collection_name(file_name, json_file='collection_names.json'):
     # Remove the file extension
@@ -58,7 +58,7 @@ def get_collection_name(file_name, json_file='collection_names.json'):
     collection_name = collection_name.strip('_-')
     # Limit to 63 characters
     collection_name = collection_name[:63]
-    
+
     # Store the original filename and new collection name in a JSON file
     if os.path.exists(json_file):
         # Load existing data
@@ -70,18 +70,17 @@ def get_collection_name(file_name, json_file='collection_names.json'):
 
     # Add or update the mapping
     collection_data[file_name] = collection_name
-    
+
     # Save the updated data back to the JSON file
     with open(json_file, 'w') as f:
         json.dump(collection_data, f, indent=4)
-    
+
     return collection_name
 
 
-
-
 def main():
-    print(f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
+    print(
+        f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
     df = pd.read_csv("cuad_qas_with_responces.csv")
     start_time = time()
 
@@ -103,7 +102,8 @@ def main():
             print(f"this is collection list:{collection_list}")
             print(f"collection was not already present... adding and storing embeddings")
             estart = time()
-            embed_and_store_chunks(pdf_path=pdf_loc,doc_id=collection_name, collection=collection)
+            embed_and_store_chunks(
+                pdf_path=pdf_loc, doc_id=collection_name, collection=collection)
             etime = time() - estart
             print(f"Time taken for embedding and storing: {etime}")
             print(f"added and stored embeddings")
@@ -117,13 +117,12 @@ def main():
         df.at[index, 'results'] = result
         time_elapsed = time() - start_time
         print(f"time elapsed:{time_elapsed}")
-    
+
     total_time = time() - start_time
     print(f"total time taken for evaluation: {total_time}")
     df.to_csv("CUAD_evaluated.csv")
 
 
 if __name__ == "__main__":
-    
+
     main()
-    
