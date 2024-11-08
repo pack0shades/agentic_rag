@@ -5,8 +5,7 @@ import concurrent.futures
 import time
 from cross_verifier import cross_verify
 from dotenv import load_dotenv
-from test import *
-
+from test import query, context, query2, context2
 
 load_dotenv()
 print(os.getenv("WORKSPACE_DIR"))
@@ -258,7 +257,6 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
 if __name__ == "__main__":
     start = time.time()
 
-    # print(multi_agent(query, context))
     agents, meta_agent, final_agent, router = get_agents()
 
     print(multi_agent(agents, meta_agent, final_agent, router, query2, context2))
