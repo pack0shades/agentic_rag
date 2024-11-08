@@ -98,11 +98,17 @@ def main():
             print("PDF not found.")
         collection_name = get_collection_name(filename)
         print(f"collection name:{collection_name}")
-        collection, collection_present = get_collection(collection_name)
-        if collection_present==False:
+        collection, collection_list = get_collection(collection_name)
+        if collection_name not in collection_list:
+            print(f"this is collection list:{collection_list}")
+            print(f"collection was not already present... adding and storing embeddings")
+            estart = time()
             embed_and_store_chunks(pdf_path=pdf_loc,doc_id=collection_name, collection=collection)
-            print(f"collection was not already present... added and stored embeddings")
-        print(f"collection")
+            etime = time() - estart
+            print(f"Time taken for embedding and storing: {etime}")
+            print(f"added and stored embeddings")
+        else:
+            print(f"collection is already present.....badhiyaa")
         reranker_model = DocumentReranker()
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")

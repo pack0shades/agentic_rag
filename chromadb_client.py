@@ -15,12 +15,14 @@ def get_collection(filename='documentembeddings'):
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"
     )
-    if filename in chroma_client.list_collections():
-        collection_present = True
-    else:
-        collection_present = False
+    print(f"ye rhi list {chroma_client.list_collections()}")
     collection = chroma_client.get_or_create_collection(name=filename, embedding_function=openai_ef)
-    return collection, collection_present
+    collection_list = []
+    for i in range(len(chroma_client.list_collections())):
+        collection_name = chroma_client.list_collections()[i].name
+        print(f"ye rha collection name:{collection_name}")
+        collection_list.append(collection_name)
+    return collection, collection_list
 
 def retrieve_documents(collection, query: str, n_results=args.retrieved_docs)-> str:
     results = collection.query(query_texts=[query], n_results=n_results)
