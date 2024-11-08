@@ -75,7 +75,7 @@ def embed_and_store_chunks(doc_id, pdf_path: str, collection):
 if __name__ == "__main__":
     # Initialize Chroma DB through command chroma run --path /db_path
     pdf_path = './pdfs/nvidia.pdf'
-    client = chromadb.HttpClient(host="localhost", port=8000)
+    client = chromadb.HttpClient(host="localhost", port=5000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"

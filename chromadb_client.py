@@ -10,7 +10,7 @@ args = get_args()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_collection(filename='documentembeddings'):
-    chroma_client = chromadb.HttpClient(host='localhost', port=8000)
+    chroma_client = chromadb.HttpClient(host='localhost', port=5000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"
@@ -30,8 +30,8 @@ def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) ->
     return results["documents"][0]
 
 
-def main(query):
-    collection, collection_present = get_collection()
+def return_final_retrieve_docs(query):
+    collection, collection_present = get_collection('collection-1731096205')
     retrieved_docs = retrieve_documents(collection, query)
     return retrieved_docs
 
@@ -39,7 +39,6 @@ def main(query):
 if __name__ == "__main__":
     query = "What are the benefits of using RAG for information retrieval?"
     start = time.time()
-    results = main(query)
+    results = return_final_retrieve_docs(query)
     end = time.time()
-    print(f"Time taken: {end - start:.4f} seconds")
     print(results)
