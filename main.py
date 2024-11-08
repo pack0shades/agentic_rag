@@ -7,6 +7,7 @@ from openai import OpenAI
 from typing import List
 from time import time
 from args import get_args
+from swarm_router import get_agents, multi_agent
 
 args = get_args()
 
@@ -24,26 +25,10 @@ def get_context(collection, reranker, query: str)-> str:
     return context
 
 
-def generate_response_from_context(quer: str, context)-> str:
-    prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
+def generate_response_from_context(query: str, context)-> str:
+    agents, meta_agent, final_agent, router = get_agents()
 
-    Context: {context}
-    User Query: {quer}
-    
-    Response:'''
-    client = OpenAI()
-
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "you are a useful assistant"},
-            {
-                "role": "user",
-                "content": f"{prompt}"
-            }
-        ]
-    )
-    return (completion.choices[0].message.content)
+    return multi_agent(agents, meta_agent, final_agent, router, query, context)
     
 
 def pipeline(collection, reranker, query: str)-> str:
