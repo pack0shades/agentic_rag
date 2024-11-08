@@ -9,16 +9,20 @@ args = get_args()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-def get_collection():
+def get_collection(filename='documentembeddings'):
     chroma_client = chromadb.HttpClient(host='localhost', port=8000)
     openai_ef = chromadb.utils.embedding_functions.OpenAIEmbeddingFunction(
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"
     )
-    collection = chroma_client.get_collection(
-        'document_embeddings', embedding_function=openai_ef)
-    return collection
+    print(f"ye rhi list {chroma_client.list_collections()}")
+    collection = chroma_client.get_or_create_collection(name=filename, embedding_function=openai_ef)
+    collection_list = []
+    for i in range(len(chroma_client.list_collections())):
+        collection_name = chroma_client.list_collections()[i].name
+        print(f"ye rha collection name:{collection_name}")
+        collection_list.append(collection_name)
+    return collection, collection_list
 
 
 def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> str:
@@ -27,7 +31,8 @@ def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) ->
 
 
 def main(query):
-    retrieved_docs = retrieve_documents(get_collection(), query)
+    collection, collection_present = get_collection()
+    retrieved_docs = retrieve_documents(collection, query)
     return retrieved_docs
 
 

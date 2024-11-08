@@ -10,6 +10,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
 from dotenv import load_dotenv
 load_dotenv()
+import os
+from typing import List
+from time import time
+from args import get_args
+from time import time
+args = get_args()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -74,11 +80,12 @@ if __name__ == "__main__":
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"
     )
-    collection = client.get_or_create_collection(name="document_embeddings",
-                                                 # l2 is the default
-                                                 metadata={
-                                                     "hnsw:space": "cosine"},
-                                                 embedding_function=openai_ef)
+    collection_name = args.collection_name
+    if collection_name == "generate":
+        collection_name = f"collection-{int(time())}"
+    collection = client.get_or_create_collection(name=collection_name,
+                                                 metadata={"hnsw:space": "cosine"},  # l2 is the default
+                                                 embedding_function=openai_ef) 
     print("Chroma DB initialized.")
     print(f"{client.list_collections()}")
 
