@@ -7,6 +7,7 @@ from openai import OpenAI
 from typing import List
 from time import time
 from args import get_args
+import time
 
 args = get_args()
 
@@ -22,7 +23,7 @@ def get_context(collection, reranker, query: str)-> str:
             context += f"Rank {idx + 1}: {doc}\n"
         return context
     else:
-        return retrieved_docs
+        return str(retrieved_docs)
     
 
 def generate_response_from_context(quer: str, context)-> str:

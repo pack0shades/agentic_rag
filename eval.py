@@ -8,34 +8,42 @@ from time import time
 args = get_args()
 
 def judge_llm(ground_truth, generated_answer):
-    prompt = f"""
-    Ground Truth: "{ground_truth}"
-    Generated Answer: "{generated_answer}"
+    prompt1 = f"""
+    
     Evaluate the similarity of two given text snippets. Input: Ground Truth Text, Predicted Answer Text.
     Output: 1 if the Predicted Answer Text has the same context as the Ground Truth Text, 0 otherwise 
     '''do not answer anything except 0 or 1'''.
     """
+    prompt2 = f"""
+    Ground Truth: "{ground_truth}"
+    Generated Answer: "{generated_answer}"
+    
+    """
 
     
-    response = openai.Completion.create(
-        model="gpt-40-mini",
-        prompt=prompt,
-        max_tokens=1,
-        temperature=0
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": prompt1},
+            {"role": "user", "content": prompt2},
+        ]
     )
 
-    output = response.choices[0].text.strip()
+    output = response.choices[0].message.content
+    print(f"judge saahab ka decision: {output}")
     return int(output) if output in {"1", "0"} else 0
 
-def find_pdf(data_dir: str, filename: str)->str:
-    filename = filename + ".pdf"
-    for dirpath, dirnames, pdfs in os.walk(data_dir):
-        for file in pdfs:
+def find_pdf(data_dir: str, filename: str) -> str:
+    filename = filename + ".PDF"
+    for dirpath, _, files in os.walk(data_dir):
+        for file in files:
             if file == filename:
-                return os.path.join(dirpath, file)
-            else:
-                print(f"File {filename} not found in {dirpath}.AAAAAAAAAAAaaaaaaaaaaaaaAAAAAAAAAAAAAAAAA")
-                return None
+                final_path = os.path.join(dirpath, file)
+                return final_path
+    
+    # If the file is not found, print and return None
+    print(f"File {filename} not found in {data_dir}")
+    return None
             
 import re
 import json
@@ -78,20 +86,24 @@ def main():
     start_time = time()
 
     for index, row in df.iterrows():
-        query = row['question']
+        query = str(row['question'])
+        print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
         data_dir = '/home/pragay/interiit/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
+        if pdf_loc:
+            print(f"PDF found at: {pdf_loc}")
+        else:
+            print("PDF not found.")
         collection_name = get_collection_name(filename)
         print(f"collection name:{collection_name}")
         collection, collection_present = get_collection(collection_name)
-        if not collection_present:
+        if collection_present==False:
             embed_and_store_chunks(pdf_path=pdf_loc,doc_id=collection_name, collection=collection)
             print(f"collection was not already present... added and stored embeddings")
         print(f"collection")
         reranker_model = DocumentReranker()
-
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")
         df.at[index, 'response'] = res
