@@ -4,30 +4,37 @@ from args import get_args
 
 args = get_args()
 
-model_name="distilbert-base-uncased-finetuned-sst-2-english"
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+
 class DocumentReranker:
     def __init__(self, model_name="distilbert-base-uncased-finetuned-sst-2-english"):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            model_name)
 
-    def rerank_documents(self, query, documents)-> list[str]:
-        
+    def rerank_documents(self, query, documents) -> list[str]:
+
         query_encoding = self.tokenizer(query, return_tensors='pt')
         scores = []
 
         for doc in documents:
-            inputs = self.tokenizer(doc, return_tensors='pt', truncation=True, padding=True, max_length=512)
-            
+            inputs = self.tokenizer(
+                doc, return_tensors='pt', truncation=True, padding=True, max_length=512)
+
             combined_inputs = {**query_encoding, **inputs}
-            
+
             with torch.no_grad():
                 logits = self.model(**combined_inputs).logits
-                score = torch.softmax(logits, dim=-1)[:, 1].item()  # Probability of relevance
+                # Probability of relevance
+                score = torch.softmax(logits, dim=-1)[:, 1].item()
                 scores.append(score)
-        
-        reranked_docs = sorted(zip(documents, scores), key=lambda x: x[1], reverse=True)
-        
+
+        reranked_docs = sorted(zip(documents, scores),
+                               key=lambda x: x[1], reverse=True)
+
         return [doc for doc, _ in reranked_docs]
+
 
 # Example usage
 if __name__ == "__main__":

@@ -170,30 +170,36 @@ def get_agents():
     )
     return agents, meta_agent, final_agent, router
 
+
 def revenue_agent(query, context, agents):
     result = agents[0].run(context)
     result_bool = cross_verify(query, result)
     return result, result_bool
+
 
 def income_tax_agent(query, context, agents):
     result = agents[1].run(context)
     result_bool = cross_verify(query, result)
     return result, result_bool
 
+
 def legalility_agent(query, context, agents):
     result = agents[2].run(context)
     result_bool = cross_verify(query, result)
     return result, result_bool
+
 
 def assets_agent(query, context, agents):
     result = agents[3].run(context)
     result_bool = cross_verify(query, result)
     return result, result_bool
 
+
 def share_agent(query, context, agents):
     result = agents[4].run(context)
     result_bool = cross_verify(query, result)
-    return result, result_bool    
+    return result, result_bool
+
 
 def multi_agent(agents, meta_agent, final_agent, router, query, context):
 
@@ -203,44 +209,48 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
     with concurrent.futures.ThreadPoolExecutor() as executor:
 
         if "revenue_agent" in relevant_agents:
-            future_revenue = executor.submit(revenue_agent, query, context, agents)
+            future_revenue = executor.submit(
+                revenue_agent, query, context, agents)
         if "income_tax_agent" in relevant_agents:
-            future_income_tax = executor.submit(income_tax_agent, query, context, agents)
+            future_income_tax = executor.submit(
+                income_tax_agent, query, context, agents)
         if "legalility_agent" in relevant_agents:
-            future_legalility = executor.submit(legalility_agent, query, context, agents)
+            future_legalility = executor.submit(
+                legalility_agent, query, context, agents)
         if "assets_agent" in relevant_agents:
-            future_assets = executor.submit(assets_agent, query, context, agents)
+            future_assets = executor.submit(
+                assets_agent, query, context, agents)
         if "share_agent" in relevant_agents:
             future_share = executor.submit(share_agent, query, context, agents)
 
-        
         final_context = ""
-        
+
         # Collect the results
         if "revenue_agent" in relevant_agents:
             revenue_context, revenue_result = future_revenue.result()
-            if(revenue_result != "No"):
+            if (revenue_result != "No"):
                 final_context += revenue_context
         if "income_tax_agent" in relevant_agents:
             income_tax_context, income_tax_result = future_income_tax.result()
-            if(income_tax_result != "No"):
-                final_context += income_tax_context  
+            if (income_tax_result != "No"):
+                final_context += income_tax_context
         if "legalility_agent" in relevant_agents:
             legality_context, legalility_result = future_legalility.result()
-            if(legalility_result != "No"):
+            if (legalility_result != "No"):
                 final_context += legality_context
         if "assets_agent" in relevant_agents:
             assets_context, assets_result = future_assets.result()
-            if(assets_result != "No"):
+            if (assets_result != "No"):
                 final_context += assets_context
         if "share_agent" in relevant_agents:
             share_context, share_result = future_share.result()
-            if(share_result != "No"):
+            if (share_result != "No"):
                 final_context += share_context
 
     summarised_context = meta_agent.run(final_context)
 
-    final_output = final_agent.run(f"Query: {query}" + f"Context: {summarised_context}")    
+    final_output = final_agent.run(
+        f"Query: {query}" + f"Context: {summarised_context}")
 
     return final_output
 
@@ -248,7 +258,7 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
 if __name__ == "__main__":
     start = time.time()
 
-    #print(multi_agent(query, context))
+    # print(multi_agent(query, context))
     agents, meta_agent, final_agent, router = get_agents()
 
     print(multi_agent(agents, meta_agent, final_agent, router, query2, context2))
