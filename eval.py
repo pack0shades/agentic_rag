@@ -41,13 +41,19 @@ def judge_llm(ground_truth, generated_answer):
 
 
 def find_pdf(data_dir: str, filename: str) -> str:
-    filename = filename + ".pdf"
+    filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
                 final_path = os.path.join(dirpath, file)
                 return final_path
-
+    filename = filename.replace(".PDF", ".pdf")
+    for dirpath, _, files in os.walk(data_dir):
+        for file in files:
+            if file == filename:
+                final_path = os.path.join(dirpath, file)
+                #print(f"File {filename} found at ::::::::{final_path}")
+                return final_path
     # If the file is not found, print and return None
     print(f"File {filename} not found in {data_dir}")
     return None
@@ -89,11 +95,12 @@ def process_one_batch(batch):
     results = []
     for index, row in batch.iterrows():
         query = str(row['question'])
-        print(f"{type(query)}")
+        #print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
         data_dir = '/home/pragay/interiit/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
+        # print(f"pdf_loc:{pdf_loc}")
         if pdf_loc:
             print(f" ")
         else:
@@ -109,8 +116,8 @@ def process_one_batch(batch):
             etime = time() - estart
             #print(f"Time taken for embedding and storing: {etime}")
             #print(f"added and stored embeddings")
-        else:
-            print(" ") # print(f"collection is already present.....badhiyaa")
+        '''else:
+            print(" ") # print(f"collection is already present.....badhiyaa")'''
         reranker_model = DocumentReranker()
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")
@@ -123,7 +130,13 @@ def process_one_batch(batch):
 
 
 def main():
+    start_que = args.qfrom
+    end_que = args.qto
+    #print(f"start_que:{start_que} end_que:{end_que}")
+    logging.info("Loading data...")
     df = pd.read_csv("cuad_qas_with_responces.csv")
+    df = df[start_que:end_que]
+    #print(f"loaded...................")
     logging.info("Data loaded successfully.")
 
     num_cores = cpu_count()//2
@@ -134,9 +147,11 @@ def main():
 
     start_time = time()
     try:
+        #print(f"line:::::::::150")
         with Pool(num_cores) as pool:
             logging.info("Starting the pool processing...")
             results = pool.map(process_one_batch, batches)
+            #print(f"line ::::::::::154")
             logging.info("Pool processing completed.")
     except KeyboardInterrupt:
         logging.warning("Processing interrupted by user.")
@@ -146,13 +161,13 @@ def main():
     except Exception as e:
         logging.error(f"An error occurred during multiprocessing: {e}")
         return
-
+    #print(f"line ::::::::::164")
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
-
-    final_df.to_csv("cuad_evaluated.csv", index=False)
+    #print(f"line ::::::::::167")
+    final_df.to_csv("cuad_q1to13.csv", index=False)
     logging.info("Results saved to CSV.")
-
+    #print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
     # print(f"Total time taken for evaluation: {total_time}")
     logging.info(f"Total time taken for evaluation: {total_time}")

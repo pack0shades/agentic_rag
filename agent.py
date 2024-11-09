@@ -10,9 +10,9 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def revenue_agent(prompt: str) -> str:
-    print("dtype is niw changed to ", type(prompt))
-    prompt = str(prompt)
-    print("dtype is niw changed to ", type(prompt))
+    # print("dtype is niw changed to ", type(prompt))
+    # prompt = str(prompt)
+    # print("dtype is niw changed to ", type(prompt))
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

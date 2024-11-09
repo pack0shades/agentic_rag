@@ -10,16 +10,7 @@ from swarm_router import get_agents, multi_agent
 from agent import context_to_agent
 import argparse
 
-# Create the argument parser
-parser = argparse.ArgumentParser(description="Process a single query or multiple queries from a JSON file.")
-
-# Define arguments
-parser.add_argument("--use_reranker", default=False, action="store_true", help="Use the reranker to rerank the retrieved documents.")
-parser.add_argument("--retrieved_docs", type=int, default=5, help="Number of documents to retrieve.")
-parser.add_argument("--pipeline", default="nov9", help="Specify the pipeline to use. Options are: 'nov4', 'nov9'")
-
-# Parse the arguments
-args = parser.parse_args()
+args = get_args()
 
 # Print parsed arguments to verify correct parsing
 print("Parsed arguments:", args)

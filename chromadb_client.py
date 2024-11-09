@@ -16,13 +16,13 @@ def get_collection(filename='documentembeddings'):
         api_key=openai.api_key,
         model_name="text-embedding-ada-002"
     )
-    print(f"ye rhi list {chroma_client.list_collections()}")
+    #print(f"ye rhi list {chroma_client.list_collections()}")
     collection = chroma_client.get_or_create_collection(
         name=filename, embedding_function=openai_ef)
     collection_list = []
     for i in range(len(chroma_client.list_collections())):
         collection_name = chroma_client.list_collections()[i].name
-        print(f"ye rha collection name:{collection_name}")
+        #print(f"ye rha collection name:{collection_name}")
         collection_list.append(collection_name)
     return collection, collection_list
 
