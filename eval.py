@@ -61,7 +61,9 @@ def get_collection_name(file_name, json_file='collection_names.json'):
     # Ensure it doesn't start or end with an invalid character
     collection_name = collection_name.strip('_-')
     # Limit to 63 characters
-    collection_name = collection_name[:63]
+    if len(collection_name) > 63:
+        collection_name = collection_name[:61]
+        collection_name = collection_name + "A"
     
     # Store the original filename and new collection name in a JSON file
     if os.path.exists(json_file):
@@ -93,22 +95,22 @@ def process_one_batch(batch):
         data_dir = '/home/pragay/interiit/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         if pdf_loc:
-            print(f"PDF found at: {pdf_loc}")
+            print(f" ")
         else:
             print("PDF not found.")
         collection_name = get_collection_name(filename)
-        print(f"collection name:{collection_name}")
+        #print(f"collection name:{collection_name}")
         collection, collection_list = get_collection(collection_name)
         if collection_name not in collection_list:
-            print(f"this is collection list:{collection_list}")
-            print(f"collection was not already present... adding and storing embeddings")
+            #print(f"this is collection list:{collection_list}")
+            #print(f"collection was not already present... adding and storing embeddings")
             estart = time()
             embed_and_store_chunks(pdf_path=pdf_loc, doc_id=collection_name, collection=collection)
             etime = time() - estart
-            print(f"Time taken for embedding and storing: {etime}")
-            print(f"added and stored embeddings")
+            #print(f"Time taken for embedding and storing: {etime}")
+            #print(f"added and stored embeddings")
         else:
-            print(f"collection is already present.....badhiyaa")
+            print(" ") # print(f"collection is already present.....badhiyaa")
         reranker_model = DocumentReranker()
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")
