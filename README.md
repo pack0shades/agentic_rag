@@ -6,3 +6,5 @@ this is an agentic rag pipeline to decipher important information from finance d
   *run the chroma server by command $chroma run --path path/to/parent/dir/
 
   *in new terminal run main.py and enter the query...
+  
+  *for evaluation after running chroma server run eval.py
