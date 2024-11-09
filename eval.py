@@ -41,7 +41,7 @@ def judge_llm(ground_truth, generated_answer):
 
 
 def find_pdf(data_dir: str, filename: str) -> str:
-    filename = filename + ".pdf"
+    filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
@@ -92,7 +92,7 @@ def process_one_batch(batch):
         print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = '/home/pragay/interiit/CUAD_v1/'
+        data_dir = '/Users/bappa123/Downloads/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         if pdf_loc:
             print(f" ")
@@ -117,6 +117,8 @@ def process_one_batch(batch):
         row['response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
         row['results'] = result
+        context_retir= get_context(collection=collection,reranker=reranker_model,query=query)
+        row['context_retrived']=context_retir
         results.append(row)
     
     return pd.DataFrame(results)
