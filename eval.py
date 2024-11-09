@@ -161,12 +161,12 @@ def main():
 
     start_time = time()
     try:
-        print(f"line:::::::::150")
+        #print(f"line:::::::::150")
         with Pool(num_cores) as pool:
             logging.info("Starting the pool processing...")
             print(f"Starting the pool processing...")
             results = pool.map(process_one_batch, batches)
-            print(f"line ::::::::::154")
+            #print(f"line ::::::::::154")
             logging.info("Pool processing completed.")
             print(f"Pool processing completed.")
     except KeyboardInterrupt:
@@ -177,15 +177,15 @@ def main():
     except Exception as e:
         logging.error(f"An error occurred during multiprocessing: {e}")
         return
-    print(f"line ::::::::::164")
+    #print(f"line ::::::::::164")
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
     #print(f"line ::::::::::167")
     final_df.to_csv("cuad_q1300to1800.csv", index=False)
     logging.info("Results saved to CSV.")
-    print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+    #print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
-    print(f"Total time taken for evaluation: {total_time}")
+    # print(f"Total time taken for evaluation: {total_time}")
     logging.info(f"Total time taken for evaluation: {total_time}")
 
 if __name__ == "__main__":
