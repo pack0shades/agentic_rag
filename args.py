@@ -14,7 +14,7 @@ def get_args():
     arg.add_argument("--qfrom", type=int, default=0,help="from which question to start")
     arg.add_argument("--qto", type=int, default=5500,help="to which question to end")
     arg.add_argument("--pipeline", default="naive", help="Specify the pipeline to use. Options are: 'multi_agent', 'router'")
-    arg.add_argument("--reranker_model", type=str, default="JinaReranker")
+    arg.add_argument("--reranker_model", default=False, type=str)
 
     return arg.parse_args()
 
