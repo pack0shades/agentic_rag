@@ -144,11 +144,11 @@ def process_one_batch(batch):
 def main():
     start_que = args.qfrom
     end_que = args.qto
-    #print(f"start_que:{start_que} end_que:{end_que}")
+    print(f"start_que:{start_que} end_que:{end_que}")
     logging.info("Loading data...")
     df = pd.read_csv("cuad_qas_with_responces.csv")
     df = df[start_que:end_que]
-    #print(f"loaded...................")
+    print(f"loaded...................")
     logging.info("Data loaded successfully.")
 
     num_cores = cpu_count()//2
@@ -159,11 +159,11 @@ def main():
 
     start_time = time()
     try:
-        #print(f"line:::::::::150")
+        print(f"line:::::::::150")
         with Pool(num_cores) as pool:
             logging.info("Starting the pool processing...")
             results = pool.map(process_one_batch, batches)
-            #print(f"line ::::::::::154")
+            print(f"line ::::::::::154")
             logging.info("Pool processing completed.")
     except KeyboardInterrupt:
         logging.warning("Processing interrupted by user.")
@@ -173,15 +173,15 @@ def main():
     except Exception as e:
         logging.error(f"An error occurred during multiprocessing: {e}")
         return
-    #print(f"line ::::::::::164")
+    print(f"line ::::::::::164")
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
-    #print(f"line ::::::::::167")
+    print(f"line ::::::::::167")
     final_df.to_csv("cuad_q1to13.csv", index=False)
     logging.info("Results saved to CSV.")
-    #print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+    print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
-    # print(f"Total time taken for evaluation: {total_time}")
+    print(f"Total time taken for evaluation: {total_time}")
     logging.info(f"Total time taken for evaluation: {total_time}")
 
 if __name__ == "__main__":
