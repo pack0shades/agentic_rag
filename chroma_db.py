@@ -50,10 +50,12 @@ def embed_and_store_chunks(doc_id, pdf_path: str, collection):
         doc_id (str): Unique identifier for the document.
         pdf_path (str): Path to the PDF document.
     """
+    # print(f"mai Embedding store karne wala hoon {doc_id}")
 
     chunks = custom_chunk_document_pdf(pdf_path)
 
     for idx, chunk in enumerate(chunks):
+        # print ("v3o455iiiiiiiiiiiog45obv5iooooooooooooooooooooooooooooooooooooooobbig54bb4")
         embedding = openai.embeddings.create(
             input=chunk,
             model="text-embedding-ada-002"

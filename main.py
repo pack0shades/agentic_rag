@@ -17,6 +17,8 @@ args = get_args()
 def get_context(collection, reranker, query: str, topk=-1) -> str:
     # Retrieve documents
     retrieved_docs = retrieve_documents(collection, query)
+    
+    # print (f"retrieved_docs:{retrieved_docs}")
 
     if reranker is not None:
         # Rerank documents
