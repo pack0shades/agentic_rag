@@ -11,7 +11,7 @@ def get_args():
                      default="generate", help="Name of the collection")
     arg.add_argument("--pdf_path", type=str,
                      default="./pdfs/nvidia.pdf", help="Path to the PDF document")
-    arg.add_argument("--pipeline", default="nov9", help="Specify the pipeline to use. Options are: 'nov4', 'nov9'")
+    arg.add_argument("--pipeline", default="naive", help="Specify the pipeline to use. Options are: 'nov4', 'nov9'")
     arg.add_argument("--reranker_model", type=str, default="JinaReranker")
 
     return arg.parse_args()

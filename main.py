@@ -20,7 +20,7 @@ def get_context(reranker, query: str, topk=-1) -> str:
 
     if reranker is not None:
         # Rerank documents
-        reranked_docs = reranker.rerank(query, retrieved_docs, topk)
+        reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
 
@@ -59,15 +59,18 @@ def generate_response_from_multi_agent(query: str, context) -> str:
 def pipeline(reranker, query: str, topk) -> str:
     context = get_context(reranker, query, topk=topk)
     # print(f"ye rha context:::{context}")
-    if args.pipeline == "nov4":
-        final_context = context_to_agent(context)
-        res = generate_response_from_context(query, final_context)
+    if args.pipeline == "multi_agent":
+        fin_context = context_to_agent(context)
+        res = generate_response_from_context(query, fin_context)
         return res
-    elif args.pipeline == "nov9":
+    elif args.pipeline == "router":
         res = generate_response_from_multi_agent(query, context)
         return res
+    elif args.pipeline == "naive":
+        res = generate_response_from_context(query, context)
+        return res
     else:
-        print("use --pipeline argument to specify the pipeline, available options are: 'nov4', 'nov9'")
+        print("use --pipeline argument to specify the pipeline")
 
 
 def main():
@@ -80,6 +83,8 @@ def main():
         reranker_model = JinaReranker()
     elif args.reranker_model == "BAAIReranker":
         reranker_model = BAAIReranker()
+
+    print(reranker_model)
 
     query = input("Enter your query: ")
     start_time = time.time()

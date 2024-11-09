@@ -109,8 +109,16 @@ def main():
             print(f"added and stored embeddings")
         else:
             print(f"collection is already present.....badhiyaa")
-        reranker_model = DocumentReranker()
-        res = pipeline(reranker_model, query)
+        
+        if args.use_reranker == False:
+            reranker_model = None
+        elif args.reranker_model == "JinaReranker":
+            reranker_model = JinaReranker()
+        elif args.reranker_model == "BAAIReranker":
+            reranker_model = BAAIReranker()
+        
+        res = pipeline(reranker_model, query, topk=5)
+        
         print(f"response:{res}")
         df.at[index, 'response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])

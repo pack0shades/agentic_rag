@@ -33,7 +33,7 @@ def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) ->
 
 
 def return_final_retrieve_docs(query):
-    collection, collection_present = get_collection('collection-1731096205')
+    collection, collection_present = get_collection()
     retrieved_docs = retrieve_documents(collection, query)
     return retrieved_docs
 
