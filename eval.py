@@ -92,7 +92,7 @@ def process_one_batch(batch):
         print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = '/home/pragay/interiit/CUAD_v1/'
+        data_dir = '/data/pathway/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         if pdf_loc:
             print(f" ")
