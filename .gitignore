@@ -6,7 +6,8 @@ swarms.log
 errors
 pdfs
 chroma.log
-/data/
+/data
 CUAD_v1
 temp
 collection_names.json
+cuad_q1300to1800.csv
