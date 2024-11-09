@@ -4,6 +4,7 @@ import os
 import tempfile
 import pandas as pd
 
+
 def main():
     # Page configuration
     st.set_page_config(
@@ -93,7 +94,8 @@ def main():
 
     # File upload and display section
     if not st.session_state.file_uploaded:
-        uploaded_file = st.file_uploader("Choose a file", type=['csv', 'txt', 'pdf'])
+        uploaded_file = st.file_uploader(
+            "Choose a file", type=['csv', 'txt', 'pdf'])
         if uploaded_file is not None:
             # Save uploaded file
             with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{uploaded_file.name}") as tmp_file:
@@ -144,6 +146,8 @@ def main():
                 st.button("RAGAS", key="ragas")
 
 # new_data = pd.read_csv('top_tracks_features.csv')
+
+
 def display_csv_data():
     """Function to display CSV data with gray background for each row"""
     try:
@@ -177,21 +181,25 @@ def display_csv_data():
         """, unsafe_allow_html=True)
 
         # Display header
-        st.markdown("<div class='tile-header'>CSV File Content:</div>", unsafe_allow_html=True)
+        st.markdown("<div class='tile-header'>CSV File Content:</div>",
+                    unsafe_allow_html=True)
 
         # Start the grid container
         st.markdown("<div class='grid-container'>", unsafe_allow_html=True)
 
         # Display each row as a tile within the grid container
         for _, row in data.iterrows():
-            row_content = "<br>".join([f"<strong>{col}:</strong> {val}" for col, val in row.items()])
-            st.markdown(f"<div class='tile-container'>{row_content}</div>", unsafe_allow_html=True)
+            row_content = "<br>".join(
+                [f"<strong>{col}:</strong> {val}" for col, val in row.items()])
+            st.markdown(
+                f"<div class='tile-container'>{row_content}</div>", unsafe_allow_html=True)
 
         # Close the grid container
         st.markdown("</div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Error displaying file data: {e}")
+
 
 def get_base64_logo():
     """Function to load and encode the logo image"""
@@ -201,6 +209,7 @@ def get_base64_logo():
             return base64.b64encode(image_file.read()).decode()
     except FileNotFoundError:
         return ""
+
 
 if __name__ == "__main__":
     main()

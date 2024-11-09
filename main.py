@@ -17,7 +17,7 @@ args = get_args()
 def get_context(collection, reranker, query: str, topk=-1) -> str:
     # Retrieve documents
     retrieved_docs = retrieve_documents(collection, query)
-    
+
     # print (f"retrieved_docs:{retrieved_docs}")
 
     if reranker is not None:
@@ -31,7 +31,8 @@ def get_context(collection, reranker, query: str, topk=-1) -> str:
         context += f"Rank {idx + 1}: {doc}\n"
     return context
 
-def generate_response_from_context(quer: str, context)-> str:
+
+def generate_response_from_context(quer: str, context) -> str:
     prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
 
     Context: {context}
@@ -52,13 +53,14 @@ def generate_response_from_context(quer: str, context)-> str:
     )
     return (completion.choices[0].message.content)
 
+
 def generate_response_from_multi_agent(query: str, context) -> str:
     agents, meta_agent, final_agent, router = get_agents()
 
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
 
 
-def pipeline(collection, reranker, query, topk) :
+def pipeline(collection, reranker, query, topk):
     # print(f"kya mai pipeline mein pahuch gya hu????")
     context = get_context(collection, reranker, query, topk=topk)
     print(f"ye rha context:::{context}")
@@ -80,7 +82,7 @@ def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
     collection, collection_list = get_collection('collection-1731096205')
-    
+
     if args.use_reranker == False:
         reranker_model = None
     elif args.reranker_model == "JinaReranker":
