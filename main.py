@@ -17,13 +17,13 @@ args = get_args()
 def get_context(collection, reranker, query: str, topk=-1) -> str:
     # Retrieve documents
     retrieved_docs = retrieve_documents(collection, query)
-
+    print(f"ye rhe retrieved docs:::::::::::::::::::::::{retrieved_docs}")
     if reranker is not None:
         # Rerank documents
         reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
-
+    print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
     context = ""
     for idx, doc in enumerate(reranked_docs):
         context += f"Rank {idx + 1}: {doc}\n"
@@ -56,9 +56,10 @@ def generate_response_from_multi_agent(query: str, context) -> str:
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
 
 
-def pipeline(collection, reranker, query: str, topk) -> str:
+def pipeline(collection, reranker, query, topk) :
+    print(f"kya mai pipeline mein pahuch gya hu????")
     context = get_context(collection, reranker, query, topk=topk)
-    # print(f"ye rha context:::{context}")
+    print(f"ye rha context:::{context}")
     if args.pipeline == "multi_agent":
         fin_context = context_to_agent(context)
         res = generate_response_from_context(query, fin_context)

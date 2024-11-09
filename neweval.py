@@ -11,7 +11,7 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 args = get_args()
 
@@ -93,95 +93,48 @@ def get_collection_name(file_name, json_file='collection_names.json'):
 
 
 
-def process_one_batch(batch):
-    results = []
-    for index, row in batch.iterrows():
+def main():
+    print(f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
+    df = pd.read_csv("Alphabet_QnA - Sheet1-2.csv")
+    start_time = time()
+    df = df[0:10]
+    for index, row in df.iterrows():
         query = str(row['question'])
-        #print(f"{type(query)}")
+        print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = os.getenv("DATA_DIR")
+        data_dir = '/home/pragay/interiit/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
-        # print(f"pdf_loc:{pdf_loc}")
         if pdf_loc:
-            print(f" ")
+            print(f"PDF found at: {pdf_loc}")
         else:
             print("PDF not found.")
         collection_name = get_collection_name(filename)
         print(f"collection name:{collection_name}")
         collection, collection_list = get_collection(collection_name)
         if collection_name not in collection_list:
-            #print(f"this is collection list:{collection_list}")
+            print(f"this is collection list:{collection_list}")
             print(f"collection was not already present... adding and storing embeddings")
             estart = time()
-            embed_and_store_chunks(pdf_path=pdf_loc, doc_id=collection_name, collection=collection)
+            embed_and_store_chunks(pdf_path=pdf_loc,doc_id=collection_name, collection=collection)
             etime = time() - estart
-            #print(f"Time taken for embedding and storing: {etime}")
+            print(f"Time taken for embedding and storing: {etime}")
             print(f"added and stored embeddings")
-        '''else:
-            print(" ") # print(f"collection is already present.....badhiyaa")'''
-        if args.use_reranker == False:
-            reranker_model = None
-        elif args.reranker_model == "JinaReranker":
-            reranker_model = JinaReranker()
-        elif args.reranker_model == "BAAIReranker":
-            reranker_model = BAAIReranker()
-
-        print(f"this is reranker model:{reranker_model}")
+        else:
+            print(f"collection is already present.....badhiyaa")
+        reranker_model = DocumentReranker()
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")
-        row['response'] = res
+        df.at[index, 'response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
-        row['results'] = result
-        context_retir= get_context(collection=collection,reranker=reranker_model,query=query)
-        row['context_retrived']=context_retir
-        results.append(row)
+        df.at[index, 'results'] = result
+        time_elapsed = time() - start_time
+        print(f"time elapsed:{time_elapsed}")
     
-    return pd.DataFrame(results)
-
-
-def main():
-    start_que = args.qfrom
-    end_que = args.qto
-    print(f"start_que:{start_que} end_que:{end_que}")
-    logging.info("Loading data...")
-    df = pd.read_csv("cuad_qas_with_responces.csv")
-    df = df[start_que:end_que]
-    print(f"loaded...................")
-    logging.info("Data loaded successfully.")
-
-    num_cores = cpu_count()//3
-    logging.info(f"Number of cores being used: {num_cores}")
-    batch_size = len(df) // num_cores
-    batches = [df[i:i + batch_size] for i in range(0, len(df), batch_size)]
-    logging.info(f"Total number of batches: {len(batches)}")
-
-    start_time = time()
-    try:
-        #print(f"line:::::::::150")
-        with Pool(num_cores) as pool:
-            logging.info("Starting the pool processing...")
-            results = pool.map(process_one_batch, batches)
-            #print(f"line ::::::::::154")
-            logging.info("Pool processing completed.")
-    except KeyboardInterrupt:
-        logging.warning("Processing interrupted by user.")
-        pool.terminate()
-        pool.join()
-        return
-    except Exception as e:
-        logging.error(f"An error occurred during multiprocessing: {e}")
-        return
-    #print(f"line ::::::::::164")
-    final_df = pd.concat(results, ignore_index=True)
-    logging.info("Results combined into a single DataFrame.")
-    #print(f"line ::::::::::167")
-    final_df.to_csv("cuad_q1to13.csv", index=False)
-    logging.info("Results saved to CSV.")
-    #print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
-    # print(f"Total time taken for evaluation: {total_time}")
-    logging.info(f"Total time taken for evaluation: {total_time}")
+    print(f"total time taken for evaluation: {total_time}")
+    df.to_csv("CUAD_evaluated.csv")
+
 
 if __name__ == "__main__":
     main()

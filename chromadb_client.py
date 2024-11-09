@@ -20,6 +20,9 @@ def get_collection(filename='documentembeddings'):
     collection = chroma_client.get_or_create_collection(
         name=filename, embedding_function=openai_ef)
     collection_list = []
+    chroma_client.reset()
+    print(f"deleted")
+    time.sleep(10)
     for i in range(len(chroma_client.list_collections())):
         collection_name = chroma_client.list_collections()[i].name
         #print(f"ye rha collection name:{collection_name}")
@@ -27,8 +30,9 @@ def get_collection(filename='documentembeddings'):
     return collection, collection_list
 
 
-def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> str:
+def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) ->list:
     results = collection.query(query_texts=[query], n_results=n_results)
+    print(f"results in chor:::::::::{results}")
     return results["documents"][0]
 
 
