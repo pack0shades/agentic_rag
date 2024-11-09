@@ -8,6 +8,8 @@ from main import *
 from time import time
 from multiprocessing import Pool, cpu_count
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -42,11 +44,11 @@ def judge_llm(ground_truth, generated_answer):
 
 def find_pdf(data_dir: str, filename: str) -> str:
     filename = filename + ".PDF"
-    filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
                 final_path = os.path.join(dirpath, file)
+                print(f"this isss final path:::::{final_path}")
                 return final_path
     filename = filename.replace(".PDF", ".pdf")
     for dirpath, _, files in os.walk(data_dir):
@@ -99,7 +101,7 @@ def process_one_batch(batch):
         #print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = '/Users/bappa123/Downloads/CUAD_v1/'
+        data_dir = os.getenv("DATA_DIR")
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         # print(f"pdf_loc:{pdf_loc}")
         if pdf_loc:
