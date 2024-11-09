@@ -42,7 +42,7 @@ def pipeline(collection, reranker, query: str) -> str:
 def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
-    collection, collection_present = get_collection('collection-1731096205')
+    collection, collection_list = get_collection('collection-1731096205')
     reranker_model = DocumentReranker()
 
     query = input("Enter your query: ")
