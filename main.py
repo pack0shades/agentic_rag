@@ -7,6 +7,7 @@ from openai import OpenAI
 from typing import List
 from time import time
 from args import get_args
+import time
 
 args = get_args()
 
@@ -17,12 +18,13 @@ def get_context(collection, reranker, query: str)-> str:
     if args.use_reranker:
     # Rerank documents
         reranked_docs = reranker.rerank_documents(query, retrieved_docs)
-
-    context = ""
-    for idx, doc in enumerate(reranked_docs):
-        context += f"Rank {idx + 1}: {doc}\n"
-    return context
-
+        context = ""
+        for idx, doc in enumerate(reranked_docs):
+            context += f"Rank {idx + 1}: {doc}\n"
+        return context
+    else:
+        return str(retrieved_docs)
+    
 
 def generate_response_from_context(quer: str, context)-> str:
     prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
@@ -55,7 +57,7 @@ def pipeline(collection, reranker, query: str)-> str:
 
 def main():
     print(f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
-    collection = get_collection()
+    collection, collection_present = get_collection()
     reranker_model = DocumentReranker()
 
     query = input("Enter your query: ")
