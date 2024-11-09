@@ -1,4 +1,9 @@
 .env
 __pycache__
 chroma.log
-data/
+agent_workspace
+swarms.log
+errors
+pdfs
+chroma.log
+/data/

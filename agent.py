@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-def revenue_agent(prompt: str)-> str:
+
+
+def revenue_agent(prompt: str) -> str:
     print("dtype is niw changed to ", type(prompt))
     prompt = str(prompt)
     print("dtype is niw changed to ", type(prompt))
@@ -20,7 +22,8 @@ def revenue_agent(prompt: str)-> str:
     )
     return response.choices[0].message.content
 
-def income_tax_agent(prompt: str)-> str:
+
+def income_tax_agent(prompt: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -28,9 +31,10 @@ def income_tax_agent(prompt: str)-> str:
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content  
+    return response.choices[0].message.content
 
-def legalility_agent(prompt: str)-> str:
+
+def legalility_agent(prompt: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -38,9 +42,10 @@ def legalility_agent(prompt: str)-> str:
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content 
+    return response.choices[0].message.content
 
-def assets_agent(prompt: str)-> str:
+
+def assets_agent(prompt: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -51,57 +56,62 @@ def assets_agent(prompt: str)-> str:
     return response.choices[0].message.content
 
 
-def share_agent(prompt: str)-> str:
+def share_agent(prompt: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "Provide information about the shares, stocks, and equity of a company from the 10-K report. Please use the information retrieved from the company's 10-K report for [Company Name] (e.g., [link to 10-K report] or a similar publicly available filing) to answer the following questions: [Insert specific questions about shares, stocks, and equity, e.g. 'What is the company's total share count?', 'What is the market capitalization of the company?', 'How many outstanding shares does the company have?"},
+            {"role": "system",
+                "content": "Provide information about the shares, stocks, and equity of a company from the 10-K report. Please use the information retrieved from the company's 10-K report for [Company Name] (e.g., [link to 10-K report] or a similar publicly available filing) to answer the following questions: [Insert specific questions about shares, stocks, and equity, e.g. 'What is the company's total share count?', 'What is the market capitalization of the company?', 'How many outstanding shares does the company have?"},
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content 
-   
-def final_agent(prompt: str)-> str:
+    return response.choices[0].message.content
+
+
+def final_agent(prompt: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "Design a text summarization model that can take in input from other large language models (LLMs) and generate a concise and accurate summary of the input text. The model should be able to handle input from multiple LLMs and produce a summarized output that captures the essential information from all the input texts."},
+            {"role": "system",
+                "content": "Design a text summarization model that can take in input from other large language models (LLMs) and generate a concise and accurate summary of the input text. The model should be able to handle input from multiple LLMs and produce a summarized output that captures the essential information from all the input texts."},
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content  
+    return response.choices[0].message.content
 
 # Define a function to execute all agents in parallel and combine the results
-def generate_final_prompt(prompt: str)-> str:
+
+
+def generate_final_prompt(prompt: str) -> str:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_revenue = executor.submit(revenue_agent, prompt)
         future_income_tax = executor.submit(income_tax_agent, prompt)
         future_legalility = executor.submit(legalility_agent, prompt)
         future_assets = executor.submit(assets_agent, prompt)
         future_share = executor.submit(share_agent, prompt)
-        
+
         # Collect the results
         revenue_result = future_revenue.result()
         income_tax_result = future_income_tax.result()
         legalility_result = future_legalility.result()
         assets_result = future_assets.result()
         share_result = future_share.result()
-        
+
         # Combine the results to form the final prompt
-        final_prompt = prompt + revenue_result + income_tax_result + legalility_result + assets_result + share_result
-    
-    return final_prompt   
+        final_prompt = prompt + revenue_result + income_tax_result + \
+            legalility_result + assets_result + share_result
+
+    return final_prompt
+
 
 def context_to_agent(prompt):
     final_prompt = generate_final_prompt(prompt)
     output = final_agent(final_prompt)
-    return output     
+    return output
 
 
 if __name__ == "__main__":
     prompt = "what was the ROI on tesla shares from 2016 to 2020"
     output = context_to_agent(prompt)
-    print ("Final_output:")
+    print("Final_output:")
     print(output)
-
-

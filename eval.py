@@ -1,3 +1,5 @@
+import re
+import json
 import openai
 import pandas as pd
 import os
@@ -10,6 +12,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 args = get_args()
+
 
 def judge_llm(ground_truth, generated_answer):
     prompt1 = f"""
@@ -24,7 +27,6 @@ def judge_llm(ground_truth, generated_answer):
     
     """
 
-    
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -37,6 +39,7 @@ def judge_llm(ground_truth, generated_answer):
     print(f"judge saahab ka decision: {output}")
     return int(output) if output in {"1", "0"} else 0
 
+
 def find_pdf(data_dir: str, filename: str) -> str:
     filename = filename + ".pdf"
     for dirpath, _, files in os.walk(data_dir):
@@ -44,14 +47,11 @@ def find_pdf(data_dir: str, filename: str) -> str:
             if file == filename:
                 final_path = os.path.join(dirpath, file)
                 return final_path
-    
+
     # If the file is not found, print and return None
     print(f"File {filename} not found in {data_dir}")
     return None
-            
-import re
-import json
-import os
+
 
 def get_collection_name(file_name, json_file='collection_names.json'):
     # Remove the file extension
@@ -76,11 +76,11 @@ def get_collection_name(file_name, json_file='collection_names.json'):
 
     # Add or update the mapping
     collection_data[file_name] = collection_name
-    
+
     # Save the updated data back to the JSON file
     with open(json_file, 'w') as f:
         json.dump(collection_data, f, indent=4)
-    
+
     return collection_name
 
 
