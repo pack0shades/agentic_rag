@@ -11,6 +11,8 @@ def get_args():
                      default="generate", help="Name of the collection")
     arg.add_argument("--pdf_path", type=str,
                      default="./pdfs/nvidia.pdf", help="Path to the PDF document")
+    arg.add_argument("--qfrom", type=int, default=0,help="from which question to start")
+    arg.add_argument("--qto", type=int, default=5500,help="to which question to end")
     return arg.parse_args()
 
 
