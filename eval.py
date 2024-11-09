@@ -110,9 +110,17 @@ def process_one_batch(batch):
             #print(f"Time taken for embedding and storing: {etime}")
             #print(f"added and stored embeddings")
         else:
-            print(" ") # print(f"collection is already present.....badhiyaa")
-        reranker_model = DocumentReranker()
-        res = pipeline(collection, reranker_model, query)
+            print(f"collection is already present.....badhiyaa")
+        
+        if args.use_reranker == False:
+            reranker_model = None
+        elif args.reranker_model == "JinaReranker":
+            reranker_model = JinaReranker()
+        elif args.reranker_model == "BAAIReranker":
+            reranker_model = BAAIReranker()
+        
+        res = pipeline(reranker_model, query, topk=5)
+        
         print(f"response:{res}")
         row['response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
