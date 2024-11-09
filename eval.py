@@ -41,7 +41,7 @@ def judge_llm(ground_truth, generated_answer):
 
 
 def find_pdf(data_dir: str, filename: str) -> str:
-    filename = filename + ".pdf"
+    filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
