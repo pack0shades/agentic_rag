@@ -99,7 +99,7 @@ def process_one_batch(batch):
         # print(f"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
         collection_name_json = json.load(open('collection_names.json'))
         # print (f"mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
-        if collection_name not in collection_name_json.values():
+        if collection_name not in list(collection_name_json.values()):
             #print(f"this is collection list:{collection_list}")
             print(f"collection was not already present... adding and storing embeddings")
             estart = time()
@@ -109,7 +109,8 @@ def process_one_batch(batch):
             etime = time() - estart
             #print(f"Time taken for embedding and storing: {etime}")
             #print(f"added and stored embeddings")
-            collection_data = {}
+            with open('collection_names.json', 'r') as f:
+                collection_data = json.load(f)
             collection_data[filename] = collection_name  
             print (f"collection_data:{collection_data}")
             json_file = 'collection_names.json'
@@ -150,7 +151,7 @@ def main():
     print(f"loaded...................")
     logging.info("Data loaded successfully.")
 
-    num_cores = cpu_count()//3
+    num_cores = cpu_count()//2
     logging.info(f"Number of cores being used: {num_cores}")
     # print (f"Number of cores being used: {num_cores}")
     batch_size = len(df) // num_cores
