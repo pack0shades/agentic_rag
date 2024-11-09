@@ -4,7 +4,11 @@ import openai
 import pandas as pd
 import os
 from args import get_args
-from main import *
+from main import (
+    generate_response_from_context,
+    pipeline,
+    get_context
+)
 from time import time
 from multiprocessing import Pool, cpu_count
 from concurrent.futures import ProcessPoolExecutor
@@ -142,7 +146,7 @@ def process_one_batch(batch):
         results.append(row)
         resut = pd.DataFrame(results)
         resut.to_csv("results.csv", mode='a',
-                     header=not os.path.exists("results.csv"), index=False)
+                    header=not os.path.exists("results.csv"), index=False)
     return pd.DataFrame(results)
 
 

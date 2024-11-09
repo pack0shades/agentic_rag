@@ -9,7 +9,8 @@ args = get_args()
 class JinaReranker:
     def __init__(self, model_name="jinaai/jina-reranker-v2-base-multilingual"):
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name, trust_remote_code=True)
+            model_name, trust_remote_code=True
+        )
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_name, torch_dtype="auto", trust_remote_code=True
         )
@@ -77,7 +78,7 @@ class BAAIReranker:
 
         # Sort documents by score in descending order
         scored_docs = [(doc, score.item())
-                       for doc, score in zip(documents, scores)]
+                    for doc, score in zip(documents, scores)]
         scored_docs.sort(key=lambda x: x[1], reverse=True)
 
         # Extract the top-k documents
