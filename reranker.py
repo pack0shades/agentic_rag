@@ -95,7 +95,7 @@ if __name__ == "__main__":
         "Bio-Hautpflege für empfindliche Haut mit Aloe Vera und Kamille"
     ]
     
-    reranker = BAAIReranker()
+    reranker = JinaReranker()
     reranked_docs = reranker.rerank_documents(query, retrieved_docs, 7)
 
     for idx, doc in enumerate(reranked_docs):
