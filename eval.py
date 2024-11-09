@@ -110,7 +110,7 @@ def main():
         else:
             print(f"collection is already present.....badhiyaa")
         reranker_model = DocumentReranker()
-        res = pipeline(collection, reranker_model, query)
+        res = pipeline(reranker_model, query)
         print(f"response:{res}")
         df.at[index, 'response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
