@@ -119,7 +119,14 @@ def process_one_batch(batch):
             #print(f"added and stored embeddings")
         '''else:
             print(" ") # print(f"collection is already present.....badhiyaa")'''
-        reranker_model = DocumentReranker()
+        if args.use_reranker == False:
+            reranker_model = None
+        elif args.reranker_model == "JinaReranker":
+            reranker_model = JinaReranker()
+        elif args.reranker_model == "BAAIReranker":
+            reranker_model = BAAIReranker()
+
+        print(reranker_model)
         res = pipeline(collection, reranker_model, query)
         print(f"response:{res}")
         row['response'] = res

@@ -14,9 +14,9 @@ import argparse
 args = get_args()
 
 
-def get_context(reranker, query: str, topk=-1) -> str:
+def get_context(collection, reranker, query: str, topk=-1) -> str:
     # Retrieve documents
-    retrieved_docs = return_final_retrieve_docs(query)  # list
+    retrieved_docs = retrieve_documents(collection, query)
 
     if reranker is not None:
         # Rerank documents
@@ -56,8 +56,8 @@ def generate_response_from_multi_agent(query: str, context) -> str:
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
 
 
-def pipeline(reranker, query: str, topk) -> str:
-    context = get_context(reranker, query, topk=topk)
+def pipeline(collection, reranker, query: str, topk) -> str:
+    context = get_context(collection, reranker, query, topk=topk)
     # print(f"ye rha context:::{context}")
     if args.pipeline == "multi_agent":
         fin_context = context_to_agent(context)
@@ -76,6 +76,7 @@ def pipeline(reranker, query: str, topk) -> str:
 def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
+    collection, collection_list = get_collection('collection-1731096205')
     
     if args.use_reranker == False:
         reranker_model = None
@@ -88,7 +89,7 @@ def main():
 
     query = input("Enter your query: ")
     start_time = time.time()
-    res = pipeline(reranker_model, query, topk=5)
+    res = pipeline(collection, reranker_model, query, topk=5)
     time_taken = time.time() - start_time
     print(f"Time taken: {time_taken:.4f} seconds")
     print(res)
