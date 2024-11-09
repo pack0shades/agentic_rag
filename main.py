@@ -10,18 +10,17 @@ from swarm_router import get_agents, multi_agent
 from agent import context_to_agent
 import argparse
 
+# Create the argument parser
 args = get_args()
 
-# Print parsed arguments to verify correct parsing
-print("Parsed arguments:", args)
 
-
-def get_context(collection, reranker, query: str) -> str:
+def get_context(reranker, query: str, topk=-1) -> str:
     # Retrieve documents
-    retrieved_docs = retrieve_documents(collection, query)  # list
-    if args.use_reranker:
+    retrieved_docs = return_final_retrieve_docs(query)  # list
+
+    if reranker is not None:
         # Rerank documents
-        reranked_docs = reranker.rerank_documents(query, retrieved_docs)
+        reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
 
@@ -57,29 +56,39 @@ def generate_response_from_multi_agent(query: str, context) -> str:
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
 
 
-def pipeline(collection, reranker, query: str) -> str:
-    context = get_context(collection, reranker, query)
+def pipeline(reranker, query: str, topk) -> str:
+    context = get_context(reranker, query, topk=topk)
     # print(f"ye rha context:::{context}")
-    if args.pipeline == "nov4":
-        final_context = context_to_agent(context)
-        res = generate_response_from_context(query, final_context)
+    if args.pipeline == "multi_agent":
+        fin_context = context_to_agent(context)
+        res = generate_response_from_context(query, fin_context)
         return res
-    elif args.pipeline == "nov9":
+    elif args.pipeline == "router":
         res = generate_response_from_multi_agent(query, context)
         return res
+    elif args.pipeline == "naive":
+        res = generate_response_from_context(query, context)
+        return res
     else:
-        print("use --pipeline argument to specify the pipeline, available options are: 'nov4', 'nov9'")
+        print("use --pipeline argument to specify the pipeline")
 
 
 def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
-    collection, collection_list = get_collection('collection-1731096205')
-    reranker_model = DocumentReranker()
+    
+    if args.use_reranker == False:
+        reranker_model = None
+    elif args.reranker_model == "JinaReranker":
+        reranker_model = JinaReranker()
+    elif args.reranker_model == "BAAIReranker":
+        reranker_model = BAAIReranker()
+
+    print(reranker_model)
 
     query = input("Enter your query: ")
     start_time = time.time()
-    res = pipeline(collection, reranker_model, query)
+    res = pipeline(reranker_model, query, topk=5)
     time_taken = time.time() - start_time
     print(f"Time taken: {time_taken:.4f} seconds")
     print(res)
