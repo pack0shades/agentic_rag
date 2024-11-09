@@ -92,7 +92,7 @@ def process_one_batch(batch):
         print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = '/data/pathway/CUAD_v1/'
+        data_dir = '/Users/bappa123/Downloads/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         if pdf_loc:
             print(f" ")
@@ -110,13 +110,23 @@ def process_one_batch(batch):
             #print(f"Time taken for embedding and storing: {etime}")
             #print(f"added and stored embeddings")
         else:
-            print(" ") # print(f"collection is already present.....badhiyaa")
-        reranker_model = DocumentReranker()
-        res = pipeline(collection, reranker_model, query)
+            print(f"collection is already present.....badhiyaa")
+        
+        if args.use_reranker == False:
+            reranker_model = None
+        elif args.reranker_model == "JinaReranker":
+            reranker_model = JinaReranker()
+        elif args.reranker_model == "BAAIReranker":
+            reranker_model = BAAIReranker()
+        
+        res = pipeline(reranker_model, query, topk=5)
+        
         print(f"response:{res}")
         row['response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
         row['results'] = result
+        context_retir= get_context(collection=collection,reranker=reranker_model,query=query)
+        row['context_retrived']=context_retir
         results.append(row)
     
     return pd.DataFrame(results)
