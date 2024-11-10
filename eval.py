@@ -160,7 +160,7 @@ def main():
     num_cores = cpu_count()//2
     logging.info(f"Number of cores being used: {num_cores}")
     # print (f"Number of cores being used: {num_cores}")
-    batch_size = len(df) // num_cores
+    batch_size = len(df) // (num_cores*4)
     batches = [df[i:i + batch_size] for i in range(0, len(df), batch_size)]
     logging.info(f"Total number of batches: {len(batches)}")
     print(f"Total number of batches: {len(batches)}")
@@ -189,7 +189,7 @@ def main():
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
     # print(f"line ::::::::::167")
-    final_df.to_csv("cuad_q1300to1800.csv", index=False)
+    final_df.to_csv("cuad_q0to100.csv", index=False)
     logging.info("Results saved to CSV.")
     # print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
