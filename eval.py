@@ -99,7 +99,7 @@ def judge_eval(
     
     eval_response = generate_response(
         system_prompt=EVAL_PROMPT_SYS,
-        user_prompt=EVAL_PROMPT_USR,
+        user_prompt=EVAL_PROMPT_USR.format(ground_truth, predict_answer),
         model=MODEL
     )
 
