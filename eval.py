@@ -272,7 +272,7 @@ def main():
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
     # print(f"line ::::::::::167")
-    final_df.to_csv("cuad_q1300to1800.csv", index=False)
+    final_df.to_csv("cuad_q0to100.csv", index=False)
     logging.info("Results saved to CSV.")
     # print(f"doneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     total_time = time() - start_time
