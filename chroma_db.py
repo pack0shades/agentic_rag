@@ -16,7 +16,11 @@ args = get_args()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100) -> List[str]:
+def custom_chunk_document_pdf(
+    pdf_path: str, 
+    chunk_size=500, 
+    overlap=100
+) -> List[str]:
     table_chunks = []
     text_chunks = []
 
@@ -82,10 +86,10 @@ if __name__ == "__main__":
     if collection_name == "generate":
         collection_name = f"collection-{int(time())}"
     collection = client.get_or_create_collection(name=collection_name,
-                                                 # l2 is the default
-                                                 metadata={
-                                                     "hnsw:space": "cosine"},
-                                                 embedding_function=openai_ef)
+                                                # l2 is the default
+                                                metadata={
+                                                    "hnsw:space": "cosine"},
+                                                embedding_function=openai_ef)
     print("Chroma DB initialized.")
     print(f"{client.list_collections()}")
 
