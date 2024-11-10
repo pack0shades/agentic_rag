@@ -1,5 +1,4 @@
 import re
-import json
 import openai
 from openai import OpenAI
 import pandas as pd
@@ -9,8 +8,7 @@ from args import get_args
 from main import generate_response_from_context, pipeline, get_context
 from chromadb_client import get_collection
 from chroma_db import (
-    embed_and_store_chunks,
-    custom_chunk_document_pdf,
+    embed_and_store_chunks
 )
 from reranker import JinaReranker, BAAIReranker
 from time import time
@@ -180,7 +178,7 @@ def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
     results, collection_name = result
     logging.info(f"Results for {collection_name} saved to CSV.")
     results = pd.DataFrame(results)
-    results.to_csv(collection_name + ".csv", index=False)
+    results.to_csv('results/' + collection_name + ".csv", index=False)
     return results
 
 
@@ -190,11 +188,11 @@ def main():
     df = pd.read_csv("./cuad_qas_with_responces.csv")
     logging.info("Data loaded successfully.")
 
-    num_cores = 5
+    num_cores = 6
     logging.info(f"Number of cores being used: {num_cores}")
 
     # Create actual DataFrame batches
-    batches = [group for _, group in df.groupby("id")][:5]
+    batches = [group for _, group in df.groupby("id")][51:200]
     start_time = time()
     print ('num of batches - ',len(batches))
 
@@ -206,7 +204,7 @@ def main():
     # fin_acc = (final_df["results"].sum() / len(final_df)) * 100
     # logging.info(f"final accuracy : {fin_acc}")
 
-    final_df.to_csv("cuad_q0to100.csv", index=False)
+    final_df.to_csv("results/results.csv", index=False, mode='a')
     logging.info("Results saved to CSV.")
 
     total_time = time() - start_time

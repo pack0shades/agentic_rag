@@ -63,7 +63,7 @@ def generate_response_from_multi_agent(query: str, context) -> str:
 def pipeline(collection, reranker, query, topk):
     # print(f"kya mai pipeline mein pahuch gya hu????")
     context = get_context(collection, reranker, query, topk=topk)
-    print(f"ye rha context:::{context}")
+    # print(f"ye rha context:::{context}")
     if args.pipeline == "multi_agent":
         fin_context = context_to_agent(context)
         res = generate_response_from_context(query, fin_context)
