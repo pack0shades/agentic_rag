@@ -5,7 +5,17 @@ import pandas as pd
 from config import EVAL_PROMPT_SYS, EVAL_PROMPT_USR, MODEL
 import os
 from args import get_args
-from main import generate_response_from_context, pipeline, get_context
+from main import generate_response_from_context
+from main import (
+    generate_response_from_context,
+    pipeline,
+    get_context
+)
+from agent import context_to_agent
+from swarm_router import(
+    get_agents,
+    generate_response_from_multi_agent,
+)
 from chromadb_client import get_collection
 from chroma_db import (
     embed_and_store_chunks
@@ -17,6 +27,7 @@ from concurrent.futures import ProcessPoolExecutor
 import logging
 import pandas as pd
 from dotenv import load_dotenv
+from chromadb_client import get_collection, retrieve_documents
 import chromadb
 
 load_dotenv()
@@ -67,10 +78,20 @@ def eval_function(dataset: pd.DataFrame) -> pd.DataFrame:
     return results_df
 
 
-def main_pipeline_naive(
+def eval_pipeline_(
     dataset: pd.DataFrame, collection: chromadb.Collection, client: chromadb.Client
 ) -> pd.DataFrame:
-
+    
+    if args.use_reranker == False:
+        reranker_model = None
+    elif args.reranker_model == "JinaReranker":
+        reranker_model = JinaReranker()
+    elif args.reranker_model == "BAAIReranker":
+        reranker_model = BAAIReranker()
+    else:
+        print ("reranker model not found")
+        exit(0)
+    
     results = []
     for index, row in dataset.iterrows():
 
@@ -80,13 +101,30 @@ def main_pipeline_naive(
         context = get_context(
             collection=collection, reranker=None, query=query
         )
+
+        res = ""
+
+        if args.pipeline == "multi_agent":
+            fin_context = context_to_agent(context)
+            res = generate_response_from_context(query, fin_context)
+
+        elif args.pipeline == "router":
+            res = generate_response_from_multi_agent(query, context)
+
+        elif args.pipeline == "naive":
+            res = generate_response_from_context(query, context)
+            
+        else:
+            print("use --pipeline argument to specify the pipeline")
+            exit(0)
+            
         row["context_retrived"] = context
         row["response"] = generate_response_from_context(query, context)
 
         results.append(row)
 
     results = pd.DataFrame(results)
-    print ('main pipeline result -------------- {} '.format(results.shape))
+    # print ('main pipeline result -------------- {} '.format(results.shape))
     
     return results
 
@@ -125,7 +163,7 @@ class EvaluationPipeline(object):
             return None  # Return None if results are not generated
 
         results = eval_function(results)
-        print ('results formed')
+        # print ('results formed')
         ## delete collection
         client.delete_collection(collection_name)
         return results, collection_name
@@ -145,7 +183,7 @@ def find_pdf(data_dir: str, filename: str
             if file == filename:
                 final_path = os.path.join(dirpath, file)
                 # print(f"File {filename} found at ::::::::{final_path}")
-                return final_path
+                return final_pat
     # If the file is not found, print and return None
     print(f"File {filename} not found in {data_dir}")
     return None
@@ -166,9 +204,9 @@ def get_collection_name(file_name: str
 
 def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
     # print('in process_one_batch()')
-    evalpipeline = EvaluationPipeline(main_pipeline_naive, eval_function, batch)
+    evalpipeline = EvaluationPipeline(eval_pipeline_=eval_pipeline_, eval_function=eval_function, dataset=batch)
     # eval_function(evalpipeline(dataset=batch))
-    print ('run_eval')
+    # print ('run_eval')
     result = evalpipeline.run_eval_()
 
     if result is None:

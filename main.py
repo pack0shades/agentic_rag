@@ -2,11 +2,17 @@ from agent import *
 from chroma_db import *
 import argparse
 from chromadb_client import *
-from reranker import JinaReranker, BAAIReranker
+from reranker import(
+    JinaReranker,
+    BAAIReranker
+)
 from openai import OpenAI
 from typing import List
 from args import get_args
-from swarm_router import get_agents, multi_agent
+from swarm_router import(
+    get_agents,
+    multi_agent
+)
 from agent import context_to_agent
 import argparse
 
@@ -25,7 +31,7 @@ def get_context(collection, reranker, query: str, topk: int = -1) -> str:
         reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
-    print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
+    # print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
     context = ""
     for idx, doc in enumerate(reranked_docs):
         context += f"Rank {idx + 1}: {doc}\n"

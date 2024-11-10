@@ -247,7 +247,7 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
     final_output = final_agent.run(
         f"Query: {query}" + f"Context: {summarised_context}")
     
-    print(final_output)
+    # print(final_output)
     
     human_in_the_loop = input("Do you want search the web for the query?")
 
