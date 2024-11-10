@@ -1,6 +1,7 @@
 import re
 import json
 import openai
+from openai import OpenAI
 import pandas as pd
 from config import EVAL_PROMPT_SYS, EVAL_PROMPT_USR, MODEL
 import os
@@ -28,6 +29,7 @@ logging.basicConfig(
 
 args = get_args()
 
+openaiclient = OpenAI()
 
 def generate_response(
     client: openai.OpenAI, system_prompt: str, user_prompt: str, model: str
@@ -46,6 +48,7 @@ def generate_response(
 def judge_eval(ground_truth: str, predict_answer: str) -> int:
 
     eval_response = generate_response(
+        client=openaiclient,
         system_prompt=EVAL_PROMPT_SYS,
         user_prompt=EVAL_PROMPT_USR.format(ground_truth, predict_answer),
         model=MODEL,
@@ -54,7 +57,7 @@ def judge_eval(ground_truth: str, predict_answer: str) -> int:
     return int(eval_response) if eval_response in {"1", "0"} else 0
 
 
-def eval_function(dataset: pd.DataFrame) -> float:
+def eval_function(dataset: pd.DataFrame) -> pd.DataFrame:
 
     results_df = []
     for _, row in dataset.iterrows():
@@ -62,8 +65,8 @@ def eval_function(dataset: pd.DataFrame) -> float:
         results_df.append(row)
 
     pd.DataFrame(results_df)
-    percent_of_ones = (results_df["results"].sum() / len(results_df)) * 100
-    return percent_of_ones
+    # percent_of_ones = (results_df["results"].sum() / len(results_df)) * 100
+    return results_df
 
 
 def main_pipeline_naive(
@@ -73,27 +76,30 @@ def main_pipeline_naive(
     results = []
     for index, row in dataset.iterrows():
 
+        # print ('0.00000000000000000000000000000000000000000000000000000000000000')
+
         query = str(row["question"])
         context = get_context(
-            collection=collection, reranker=args.use_reranker, query=query
+            collection=collection, reranker=None, query=query
         )
         row["context_retrived"] = context
         row["response"] = generate_response_from_context(query, context)
 
         results.append(row)
 
-    ## delete collection
-    client.delete_collection(collection)
-    return pd.DataFrame(results)
+    results = pd.DataFrame(results)
+    print ('main pipeline result -------------- {} '.format(results.shape))
+    
+    return results
 
 
 class EvaluationPipeline(object):
-    def __init__(self, main_pipeline, dataset: pd.DataFrame) -> None:
+    def __init__(self, main_pipeline, eval_function, dataset: pd.DataFrame) -> None:
         self.pipeline = main_pipeline
-        self.eval_function = None
+        self.eval_function = eval_function
         self.dataset = dataset
 
-    def run_eval_(self, eval_function) -> None:
+    def run_eval_(self) -> None:
         if not self.eval_function:
             logging.error("Eval function not provided")
             return None
@@ -101,6 +107,7 @@ class EvaluationPipeline(object):
             logging.info(f"Eval Metrics Given {self.eval_function}")
 
         filename = self.dataset.iloc[0][0]
+        print (f"file name - {filename}")
         data_dir = os.getenv("DATA_DIR")
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
 
@@ -110,10 +117,8 @@ class EvaluationPipeline(object):
 
         collection_name = get_collection_name(filename)
         collection, _, client = get_collection(collection_name)
-
-        if collection is None or client is None:
-            logging.error(f"Failed to get collection or client for {collection_name}")
-            return None  # Return None if collection or client retrieval fails
+        pdfpath = find_pdf(data_dir=data_dir, filename=filename)
+        embed_and_store_chunks(pdf_path=pdfpath, doc_id=collection_name, collection=collection)
 
         results = self.pipeline(self.dataset, collection, client)
 
@@ -121,13 +126,16 @@ class EvaluationPipeline(object):
             logging.error(f"Pipeline did not return valid results for {filename}")
             return None  # Return None if results are not generated
 
-        accuracy = eval_function(results)
-        return results, accuracy, collection_name
+        results = eval_function(results)
+        print ('results formed')
+        ## delete collection
+        client.delete_collection(collection_name)
+        return results, collection_name
 
 
 def find_pdf(data_dir: str, filename: str
 )-> str:
-    filename = filename + ".pdf"
+    filename = filename + ".PDF"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
@@ -159,14 +167,19 @@ def get_collection_name(file_name: str
 
 
 def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
-    evalpipeline = EvaluationPipeline(main_pipeline_naive, batch)
-    result = evalpipeline.run_eval_(eval_function=eval_function)
+    # print('in process_one_batch()')
+    evalpipeline = EvaluationPipeline(main_pipeline_naive, eval_function, batch)
+    # eval_function(evalpipeline(dataset=batch))
+    print ('run_eval')
+    result = evalpipeline.run_eval_()
 
     if result is None:
         logging.error("Evaluation pipeline returned None.")
         return pd.DataFrame()  # Return an empty DataFrame or handle as needed
 
-    results, _, collection_name = result
+    results, collection_name = result
+    logging.info(f"Results for {collection_name} saved to CSV.")
+    results = pd.DataFrame(results)
     results.to_csv(collection_name + ".csv", index=False)
     return results
 
@@ -174,15 +187,16 @@ def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
 
 def main():
     logging.info("Loading data...")
-    df = pd.read_csv("cuad_qas_with_responces.csv")
+    df = pd.read_csv("./cuad_qas_with_responces.csv")
     logging.info("Data loaded successfully.")
 
     num_cores = 5
     logging.info(f"Number of cores being used: {num_cores}")
 
     # Create actual DataFrame batches
-    batches = [group for _, group in df.groupby("id")]
+    batches = [group for _, group in df.groupby("id")][:5]
     start_time = time()
+    print ('num of batches - ',len(batches))
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
         results = list(executor.map(process_one_batch, batches))

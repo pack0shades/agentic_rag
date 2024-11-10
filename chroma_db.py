@@ -42,7 +42,7 @@ def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100) -> Lis
     return final_text_chunks + table_chunks
 
 
-def embed_and_store_chunks(doc_id, pdf_path: str, collection):
+def embed_and_store_chunks(doc_id, pdf_path: str, collection: chromadb.Collection):
     """
     Embeds document chunks and stores them in Chroma DB.
 
