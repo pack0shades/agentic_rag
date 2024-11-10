@@ -44,7 +44,11 @@ def custom_chunk_document_pdf(
     return final_text_chunks + table_chunks
 
 
-def embed_and_store_chunks(doc_id, pdf_path: str, collection: chromadb.Collection):
+def embed_and_store_chunks(
+    doc_id: str, 
+    pdf_path: str, 
+    collection: chromadb.Collection
+) -> None:
     """
     Embeds document chunks and stores them in Chroma DB.
 
