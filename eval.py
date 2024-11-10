@@ -2,13 +2,23 @@ import re
 import json
 import openai
 import pandas as pd
+from config import (
+    EVAL_PROMPT_SYS,
+    EVAL_PROMPT_USR,
+    MODEL
+)
 import os
 from args import get_args
-from main import *
+from main import (
+    generate_response_from_context,
+    pipeline,
+    get_context
+)
 from time import time
 from multiprocessing import Pool, cpu_count
 from concurrent.futures import ProcessPoolExecutor
 import logging
+import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -17,10 +27,86 @@ logging.basicConfig(level=logging.INFO,
 
 args = get_args()
 
+def eval_function(
+    results: pd.DataFrame
+) -> None:
+    pass
+
+
+def main_pipeline_naive(
+    dataset: pd.DataFrame,
+    from_: int, 
+    to_: int, 
+    batch_size: int
+) -> pd.DataFrame:
+    pass
+
+
+class EvaluationPipeline(object):
+    def __init__(self, main_pipeline, dataset: pd.DataFrame) -> None:
+        self.pipeline = main_pipeline
+        self.eval_function = None
+        self.dataset = dataset
+
+    def run_eval_(
+        self, 
+        from_: int, 
+        to_: int, 
+        eval_function, 
+        batch_size: int = 20
+    ) -> None:
+        if not self.eval_function:
+            logging.error("Add Eval Metrics")
+            return None
+        else:
+            logging.info(f"Eval Metrics Given {self.eval_function}")
+        
+        results = self.pipeline(
+            self.dataset,
+            from_,
+            to_,
+            batch_size=batch_size
+        )
+
+        bool_res = eval_function(
+            results
+        )
+
+        return bool_res
+
+
+def generate_response(
+    client: openai.OpenAI, 
+    system_prompt: str, 
+    user_prompt: str,
+    model: str
+) -> str:
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+    )
+
+    return response.choices[0].message.content
+
+
+def judge_eval(
+    ground_truth: str, 
+    predict_answer: str
+) -> int:
+    
+    eval_response = generate_response(
+        system_prompt=EVAL_PROMPT_SYS,
+        user_prompt=EVAL_PROMPT_USR,
+        model=MODEL
+    )
+
+    return int(eval_response) if eval_response in {"1", "0"} else 0
 
 def judge_llm(ground_truth, generated_answer):
     prompt1 = f"""
-    
     Evaluate the similarity of two given text snippets. Input: Ground Truth Text, Predicted Answer Text.
     Output: 1 if the Predicted Answer Text has the same context as the Ground Truth Text, 0 otherwise 
     '''do not answer anything except 0 or 1'''.
@@ -28,7 +114,6 @@ def judge_llm(ground_truth, generated_answer):
     prompt2 = f"""
     Ground Truth: "{ground_truth}"
     Generated Answer: "{generated_answer}"
-    
     """
 
     response = openai.chat.completions.create(
@@ -142,7 +227,7 @@ def process_one_batch(batch):
         results.append(row)
         resut = pd.DataFrame(results)
         resut.to_csv("results.csv", mode='a',
-                     header=not os.path.exists("results.csv"), index=False)
+                    header=not os.path.exists("results.csv"), index=False)
     return pd.DataFrame(results)
 
 

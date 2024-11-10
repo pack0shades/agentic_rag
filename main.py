@@ -14,7 +14,7 @@ import argparse
 args = get_args()
 
 
-def get_context(collection, reranker, query: str, topk=-1) -> str:
+def get_context(collection, reranker, query: str, topk: int = -1) -> str:
     # Retrieve documents
     retrieved_docs = retrieve_documents(collection, query)
 
@@ -44,7 +44,7 @@ def generate_response_from_context(quer: str, context) -> str:
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "you are a useful assistant"},
+            {"role": "system", "content": "You are a useful assistant"},
             {
                 "role": "user",
                 "content": f"{prompt}"
