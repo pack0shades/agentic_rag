@@ -33,7 +33,7 @@ def get_collection(filename='documentembeddings'):
 
 def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> list:
     results = collection.query(query_texts=[query], n_results=n_results)
-    print(f"results in chor:::::::::{results}")
+    # print(f"results in chor:::::::::{results}")
     return results["documents"][0]
 
 

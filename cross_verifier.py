@@ -26,7 +26,7 @@ def create_verifier(agent_name, system_prompt, llm, saved_state_path, user_name,
         agent_name=agent_name,
         system_prompt=system_prompt,
         llm=llm,
-        max_loops=2,  # increase to 2 if SSLError
+        max_loops=3,  # increase to 2 if SSLError
         dynamic_temperature_enabled=True,
         saved_state_path=saved_state_path,
         user_name=user_name,
@@ -80,7 +80,7 @@ def cross_verify(query, output):
         result_1 = future_result_1.result()
         result_2 = future_result_2.result()
         result_3 = future_result_3.result()
-        print("Cross-verifier running:::::::::::::::::::::::::::::::")
+        # print("Cross-verifier running:::::::::::::::::::::::::::::::")
     # # Each verifier agent checks the relevance of the output
     # result_1 = verifier_agent_1.run(f"Query: {query}" + f"Output: {output}")
     # result_2 = verifier_agent_2.run(f"Query: {query}" + f"Output: {output}")
@@ -89,7 +89,7 @@ def cross_verify(query, output):
     # Aggregate the results using a consensus mechanism
     consensus_result = consensus_agent.run(
         f"Agent_1: {result_1}" + f"Agent_2: {result_2}" + f"Agent_3: {result_3}")
-    print(consensus_result + "::::::::::::::::::::::::::::::::::::::")
+    # print(consensus_result + "::::::::::::::::::::::::::::::::::::::")
     return consensus_result
 
 

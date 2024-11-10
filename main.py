@@ -2,11 +2,17 @@ from agent import *
 from chroma_db import *
 import argparse
 from chromadb_client import *
-from reranker import JinaReranker, BAAIReranker
+from reranker import(
+    JinaReranker,
+    BAAIReranker
+)
 from openai import OpenAI
 from typing import List
 from args import get_args
-from swarm_router import get_agents, multi_agent
+from swarm_router import(
+    get_agents,
+    multi_agent
+)
 from agent import context_to_agent
 import argparse
 
@@ -25,7 +31,7 @@ def get_context(collection, reranker, query: str, topk: int = -1) -> str:
         reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
-    print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
+    # print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
     context = ""
     for idx, doc in enumerate(reranked_docs):
         context += f"Rank {idx + 1}: {doc}\n"
@@ -63,7 +69,7 @@ def generate_response_from_multi_agent(query: str, context) -> str:
 def pipeline(collection, reranker, query, topk):
     # print(f"kya mai pipeline mein pahuch gya hu????")
     context = get_context(collection, reranker, query, topk=topk)
-    print(f"ye rha context:::{context}")
+    # print(f"ye rha context:::{context}")
     if args.pipeline == "multi_agent":
         fin_context = context_to_agent(context)
         res = generate_response_from_context(query, fin_context)
@@ -81,7 +87,7 @@ def pipeline(collection, reranker, query, topk):
 def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
-    collection, collection_list = get_collection('collection-1731096205')
+    collection, _, _ = get_collection('collection-1731096205')
 
     if args.use_reranker == False:
         reranker_model = None
