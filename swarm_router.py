@@ -6,6 +6,7 @@ import time
 from cross_verifier import cross_verify
 from dotenv import load_dotenv
 from test import query, context, query2, context2
+import requests
 
 load_dotenv()
 print(os.getenv("WORKSPACE_DIR"))
@@ -251,9 +252,19 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
     human_in_the_loop = input("Do you want search the web for the query?")
 
     if(human_in_the_loop.lower() == "yes"):
-        pass
+        url = "https://s.jina.ai/" + query
 
-    return final_output
+        payload = {}
+        headers = {
+        'Authorization': 'Bearer jina_16491b29197e4d048e25e42f4b520abe2-r-Po81tdjJfE6ITP95bcrE-676'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        #print(response.text)
+        return final_agent.run(response.text)
+
+    else:
+        return final_output
 
 
 if __name__ == "__main__":
@@ -261,7 +272,7 @@ if __name__ == "__main__":
 
     agents, meta_agent, final_agent, router = get_agents()
 
-    print(multi_agent(agents, meta_agent, final_agent, router, query2, context2))
+    print(multi_agent(agents, meta_agent, final_agent, router, query, context))
 
     end = time.time()
     print(end - start)
