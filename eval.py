@@ -114,7 +114,7 @@ class EvaluationPipeline(object):
             return None  # Return None if file is not found
 
         collection_name = get_collection_name(filename)
-        collection, _, client = get_collection(collection_name)
+        collection, client = get_collection(collection_name)
         pdfpath = find_pdf(data_dir=data_dir, filename=filename)
         embed_and_store_chunks(pdf_path=pdfpath, doc_id=collection_name, collection=collection)
 
@@ -192,7 +192,7 @@ def main():
     logging.info(f"Number of cores being used: {num_cores}")
 
     # Create actual DataFrame batches
-    batches = [group for _, group in df.groupby("id")][51:200]
+    batches = [group for _, group in df.groupby("id")][78:200]
     start_time = time()
     print ('num of batches - ',len(batches))
 

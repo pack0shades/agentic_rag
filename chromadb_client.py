@@ -22,13 +22,8 @@ def get_collection(filename='documentembeddings'):
     # print(f"ye rhi list {chroma_client.list_collections()}")
     collection = chroma_client.get_or_create_collection(
         name=filename, embedding_function=openai_ef)
-    collection_list = []
-
-    # for i in range(len(chroma_client.list_collections())):
-    #     collection_name = chroma_client.list_collections()[i].name
-    #     # print(f"ye rha collection name:{collection_name}")
-    #     collection_list.append(collection_name)
-    return collection, collection_list, chroma_client
+    
+    return collection, chroma_client
 
 
 def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> list:
