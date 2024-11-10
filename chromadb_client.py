@@ -19,24 +19,27 @@ def get_collection(filename='documentembeddings'):
         model_name="text-embedding-ada-002"
     )
     # print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", chroma_client.list_collections())
-    #print(f"ye rhi list {chroma_client.list_collections()}")
+    # print(f"ye rhi list {chroma_client.list_collections()}")
     collection = chroma_client.get_or_create_collection(
         name=filename, embedding_function=openai_ef)
     collection_list = []
+
     for i in range(len(chroma_client.list_collections())):
         collection_name = chroma_client.list_collections()[i].name
-        #print(f"ye rha collection name:{collection_name}")
+        # print(f"ye rha collection name:{collection_name}")
         collection_list.append(collection_name)
     return collection, collection_list
 
 
-def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> str:
+def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> list:
     results = collection.query(query_texts=[query], n_results=n_results)
+    print(f"results in chor:::::::::{results}")
     return results["documents"][0]
 
 
 def return_final_retrieve_docs(query):
-    collection, collection_present = get_collection("SmartRxSystemsInc_20180914_1-A_EX1A-6_MAT_CTRCT_11351705_EX1AA")
+    collection, collection_present = get_collection(
+        "SmartRxSystemsInc_20180914_1-A_EX1A-6_MAT_CTRCT_11351705_EX1AA")
     retrieved_docs = retrieve_documents(collection, query)
     return retrieved_docs
 

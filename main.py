@@ -14,10 +14,10 @@ import argparse
 args = get_args()
 
 
-def get_context(collection, reranker, query: str, topk=-1) -> str:
+def get_context(collection, reranker, query: str, topk: int = -1) -> str:
     # Retrieve documents
     retrieved_docs = retrieve_documents(collection, query)
-    
+
     # print (f"retrieved_docs:{retrieved_docs}")
 
     if reranker is not None:
@@ -25,13 +25,14 @@ def get_context(collection, reranker, query: str, topk=-1) -> str:
         reranked_docs = reranker.rerank_documents(query, retrieved_docs, topk)
     else:
         reranked_docs = retrieved_docs
-
+    print(f"ye rhe reranked docs:::::::::::::::::::::::{reranked_docs}")
     context = ""
     for idx, doc in enumerate(reranked_docs):
         context += f"Rank {idx + 1}: {doc}\n"
     return context
 
-def generate_response_from_context(quer: str, context)-> str:
+
+def generate_response_from_context(quer: str, context) -> str:
     prompt = f'''Based on the following context, answer the user’s query accurately and concisely.
 
     Context: {context}
@@ -43,7 +44,7 @@ def generate_response_from_context(quer: str, context)-> str:
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "you are a useful assistant"},
+            {"role": "system", "content": "You are a useful assistant"},
             {
                 "role": "user",
                 "content": f"{prompt}"
@@ -52,15 +53,17 @@ def generate_response_from_context(quer: str, context)-> str:
     )
     return (completion.choices[0].message.content)
 
+
 def generate_response_from_multi_agent(query: str, context) -> str:
     agents, meta_agent, final_agent, router = get_agents()
 
     return multi_agent(agents, meta_agent, final_agent, router, query, context)
 
 
-def pipeline(collection, reranker, query: str, topk) -> str:
+def pipeline(collection, reranker, query, topk):
+    # print(f"kya mai pipeline mein pahuch gya hu????")
     context = get_context(collection, reranker, query, topk=topk)
-    # print(f"ye rha context:::{context}")
+    print(f"ye rha context:::{context}")
     if args.pipeline == "multi_agent":
         fin_context = context_to_agent(context)
         res = generate_response_from_context(query, fin_context)
@@ -79,7 +82,7 @@ def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
     collection, collection_list = get_collection('collection-1731096205')
-    
+
     if args.use_reranker == False:
         reranker_model = None
     elif args.reranker_model == "JinaReranker":
