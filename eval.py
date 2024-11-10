@@ -99,7 +99,7 @@ def judge_eval(
     
     eval_response = generate_response(
         system_prompt=EVAL_PROMPT_SYS,
-        user_prompt=EVAL_PROMPT_USR,
+        user_prompt=EVAL_PROMPT_USR.format(ground_truth, predict_answer),
         model=MODEL
     )
 
@@ -130,12 +130,11 @@ def judge_llm(ground_truth, generated_answer):
 
 
 def find_pdf(data_dir: str, filename: str) -> str:
-    filename = filename + ".PDF"
+    filename = filename + ".pdf"
     for dirpath, _, files in os.walk(data_dir):
         for file in files:
             if file == filename:
                 final_path = os.path.join(dirpath, file)
-                # print(f"this isss final path:::::{final_path}")
                 return final_path
     filename = filename.replace(".PDF", ".pdf")
     for dirpath, _, files in os.walk(data_dir):
@@ -157,12 +156,13 @@ def get_collection_name(file_name, json_file='collection_names.json'):
     # Ensure it doesn't start or end with an invalid character
     collection_name = collection_name.strip('_-')
     # Limit to 63 characters
-    if len(collection_name) >= 63:
+    if len(collection_name) > 63:
         collection_name = collection_name[:61]
         collection_name = collection_name + "A"
 
     # print(f"collection name:{collection_name}")
     return collection_name
+
 
 
 def process_one_batch(batch):
@@ -172,7 +172,7 @@ def process_one_batch(batch):
         # print(f"{type(query)}")
         print(f"question:{query}")
         filename = row['id']
-        data_dir = os.getenv("DATA_DIR")
+        data_dir = '/home/pragay/interiit/CUAD_v1/'
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
         # print(f"pdf_loc:{pdf_loc}")
         if pdf_loc == None:
@@ -214,9 +214,9 @@ def process_one_batch(batch):
             reranker_model = JinaReranker()
         elif args.reranker_model == "BAAIReranker":
             reranker_model = BAAIReranker()
-
-        print(reranker_model)
-        res = pipeline(collection, reranker_model, query, topk=5)
+        
+        res = pipeline(reranker_model, query, topk=5)
+        
         print(f"response:{res}")
         row['response'] = res
         result = judge_llm(generated_answer=res, ground_truth=row['answers'])
@@ -244,11 +244,9 @@ def main():
 
     num_cores = cpu_count()//2
     logging.info(f"Number of cores being used: {num_cores}")
-    # print (f"Number of cores being used: {num_cores}")
-    batch_size = len(df) // (num_cores*4)
+    batch_size = len(df) // num_cores
     batches = [df[i:i + batch_size] for i in range(0, len(df), batch_size)]
     logging.info(f"Total number of batches: {len(batches)}")
-    print(f"Total number of batches: {len(batches)}")
 
     start_time = time()
     # try:
