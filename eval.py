@@ -158,7 +158,11 @@ class EvaluationPipeline(object):
         collection_name = get_collection_name(filename)
         collection, client = get_collection(collection_name)
         pdfpath = find_pdf(data_dir=data_dir, filename=filename)
-        embed_and_store_chunks(pdf_path=pdfpath, doc_id=collection_name, collection=collection)
+        embed_and_store_chunks(
+            pdf_path=pdfpath, 
+            doc_id=collection_name, 
+            collection=collection
+        )
 
         results = self.pipeline(self.dataset, collection, client)
 
