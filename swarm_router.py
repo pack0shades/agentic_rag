@@ -9,7 +9,6 @@ from test import query, context, query2, context2
 import requests
 
 load_dotenv()
-print(os.getenv("WORKSPACE_DIR"))
 
 
 def get_agents():

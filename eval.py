@@ -1,4 +1,5 @@
 import re
+import hashlib
 import openai
 from openai import OpenAI
 import pandas as pd
@@ -8,20 +9,16 @@ from args import get_args
 from main import generate_response_from_context
 from main import (
     generate_response_from_context,
-    pipeline,
-    get_context
+    get_context,
+    generate_response_from_multi_agent
 )
 from agent import context_to_agent
-from swarm_router import(
-    get_agents,
-    generate_response_from_multi_agent,
-)
 from chromadb_client import get_collection
 from chroma_db import (
     embed_and_store_chunks
 )
 from reranker import JinaReranker, BAAIReranker
-from time import time
+import time
 from multiprocessing import Pool, cpu_count
 from concurrent.futures import ProcessPoolExecutor
 import logging
@@ -29,12 +26,18 @@ import pandas as pd
 from dotenv import load_dotenv
 from chromadb_client import get_collection, retrieve_documents
 import chromadb
+from tqdm import tqdm
 
 load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+logging.getLogger("uvicorn.access").setLevel(logging.WARNING)  # For FastAPI / Starlette
+logging.getLogger("werkzeug").setLevel(logging.WARNING)        # For Flask
+logging.getLogger("http.client").setLevel(logging.WARNING)     # For Python's http.client
+logging.getLogger("urllib3").setLevel(logging.WARNING)         # For urllib3, used in requests
 
 args = get_args()
 
@@ -115,13 +118,14 @@ def eval_pipeline_(
             res = generate_response_from_context(query, context)
             
         else:
-            print("use --pipeline argument to specify the pipeline")
+            logging.error("use --pipeline argument to specify the pipeline")
             exit(0)
             
         row["context_retrived"] = context
         row["response"] = generate_response_from_context(query, context)
 
         results.append(row)
+
 
     results = pd.DataFrame(results)
     # print ('main pipeline result -------------- {} '.format(results.shape))
@@ -143,7 +147,7 @@ class EvaluationPipeline(object):
             logging.info(f"Eval Metrics Given {self.eval_function}")
 
         filename = self.dataset.iloc[0][0]
-        print (f"file name - {filename}")
+        # print (f"file name - {filename}")
         data_dir = os.getenv("DATA_DIR")
         pdf_loc = find_pdf(filename=filename, data_dir=data_dir)
 
@@ -183,28 +187,33 @@ def find_pdf(data_dir: str, filename: str
             if file == filename:
                 final_path = os.path.join(dirpath, file)
                 # print(f"File {filename} found at ::::::::{final_path}")
-                return final_pat
+                return final_path
     # If the file is not found, print and return None
     print(f"File {filename} not found in {data_dir}")
     return None
 
 
-def get_collection_name(file_name: str
-)-> str:
+def get_collection_name(file_name: str) -> str:
+    # Remove the .pdf extension if present (case insensitive)
     collection_name = re.sub(r"\.pdf$", "", file_name, flags=re.IGNORECASE)
-    collection_name = re.sub(r"[^a-zA-Z0-9_-]", "_", collection_name)
+    collection_name = re.sub(r"\.PDF$", "", file_name, flags=re.IGNORECASE)
+    collection_name = re.sub(r"[^a-zA-Z0-9._-]", "_", collection_name)
+    collection_name = re.sub(r"\.\.+", "_", collection_name)
     collection_name = collection_name.strip("_-")
 
-    if len(collection_name) > 63:
-        collection_name = collection_name[:61]
-        collection_name = collection_name + "A"
+    if len(collection_name) > 50:
+        collection_name = collection_name[:50]
+
+    unique_suffix = hashlib.md5(file_name.encode()).hexdigest()[:10]  
+    unique_suffix = unique_suffix[:12]  + "a"
+    collection_name = f"{collection_name}_{unique_suffix}"
 
     return collection_name
 
 
 def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
     # print('in process_one_batch()')
-    evalpipeline = EvaluationPipeline(eval_pipeline_=eval_pipeline_, eval_function=eval_function, dataset=batch)
+    evalpipeline = EvaluationPipeline(main_pipeline=eval_pipeline_, eval_function=eval_function, dataset=batch)
     # eval_function(evalpipeline(dataset=batch))
     # print ('run_eval')
     result = evalpipeline.run_eval_()
@@ -217,6 +226,8 @@ def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
     logging.info(f"Results for {collection_name} saved to CSV.")
     results = pd.DataFrame(results)
     results.to_csv('results/' + collection_name + ".csv", index=False)
+    logging.info(f"sleeeping.......................")
+    time.sleep(10)
     return results
 
 
@@ -230,12 +241,12 @@ def main():
     logging.info(f"Number of cores being used: {num_cores}")
 
     # Create actual DataFrame batches
-    batches = [group for _, group in df.groupby("id")][78:200]
-    start_time = time()
+    batches = [group for _, group in df.groupby("id")][args.dfrom:args.dto]
+    start_time = time.time()
     print ('num of batches - ',len(batches))
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
-        results = list(executor.map(process_one_batch, batches))
+        results = list(tqdm(executor.map(process_one_batch, batches), total=len(batches)))
 
     final_df = pd.concat(results, ignore_index=True)
     logging.info("Results combined into a single DataFrame.")
@@ -245,7 +256,7 @@ def main():
     final_df.to_csv("results/results.csv", index=False, mode='a')
     logging.info("Results saved to CSV.")
 
-    total_time = time() - start_time
+    total_time = time.time() - start_time
 
     logging.info(f"Total time taken for evaluation: {total_time}")
 
