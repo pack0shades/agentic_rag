@@ -8,6 +8,8 @@ from tqdm import tqdm
 import re
 import json
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 api_key = os.getenv("PINECONE_API_KEY", "your_api_key_here")
@@ -104,13 +106,13 @@ def make_index(pdf_path: str):
 def main():
     pdffilepaths=[
         os.path.join(root, file)
-        for root, _, files in os.walk("./CUAD_v1")
+        for root, _, files in os.walk(os.getenv("DATA_DIR"))
         for file in files if file.endswith(".pdf")
     ]
     
     pdffilepaths += [
         os.path.join(root, file)
-        for root, _, files in os.walk("./CUAD_v1")
+        for root, _, files in os.walk(os.getenv("DATA_DIR"))
         for file in files if file.endswith(".PDF")
     ]
 
@@ -122,4 +124,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    li = pc.list_indexes()
+    print(f"these are ajva;j{li.names()}")
+    # main()
