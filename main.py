@@ -2,7 +2,7 @@ from agent import *
 from chroma_db import *
 import argparse
 from chromadb_client import *
-from reranker import *
+from reranker import JinaReranker, BAAIReranker
 from openai import OpenAI
 from typing import List
 from args import get_args

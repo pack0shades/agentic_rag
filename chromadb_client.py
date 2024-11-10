@@ -28,7 +28,7 @@ def get_collection(filename='documentembeddings'):
         collection_name = chroma_client.list_collections()[i].name
         # print(f"ye rha collection name:{collection_name}")
         collection_list.append(collection_name)
-    return collection, collection_list
+    return collection, collection_list, chroma_client
 
 
 def retrieve_documents(collection, query: str, n_results=args.retrieved_docs) -> list:

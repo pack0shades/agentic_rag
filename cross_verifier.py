@@ -26,7 +26,7 @@ def create_verifier(agent_name, system_prompt, llm, saved_state_path, user_name,
         agent_name=agent_name,
         system_prompt=system_prompt,
         llm=llm,
-        max_loops=1,  # increase to 2 if SSLError
+        max_loops=2,  # increase to 2 if SSLError
         dynamic_temperature_enabled=True,
         saved_state_path=saved_state_path,
         user_name=user_name,
