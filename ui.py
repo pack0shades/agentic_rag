@@ -8,7 +8,7 @@ import pandas as pd
 def main():
     # Page configuration
     st.set_page_config(
-        page_title="Pathway Demo",
+        page_title="Demo",
         layout="wide"
     )
 
