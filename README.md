@@ -1,4 +1,4 @@
-# agentic_rag
+# Agentic_RAG
 this is an Multi Agentic RAG pipeline to decipher important information from finance documents specially 10-k reports and can answer all the queries with great precision.
 ---
 
@@ -62,16 +62,19 @@ To install the necessary dependencies, run:
 ```bash
 pip install -r requirements.txt
 ```
-```bash
-python ui.py
-```
+
 
 
 
 
 ## Usage Guidelines
 
-2. **Check your browser**:
+1. **Run UI file**
+   ```bash
+    python ui.py
+   ```
+
+3. **Check your browser**:
    ```bash
    http://127.0.0.1:7860
    ```
