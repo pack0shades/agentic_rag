@@ -16,10 +16,13 @@ args = get_args()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100) -> List[str]:
+def custom_chunk_document_pdf(
+    pdf_path: str,
+    chunk_size=500,
+    overlap=100
+) -> List[str]:
     table_chunks = []
     text_chunks = []
-
     # Extract tables using Camelot
     # Use 'stream' or 'lattice' depending on table structure
     tables = camelot.read_pdf(pdf_path, pages='1-end', flavor='stream')
@@ -32,7 +35,6 @@ def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100) -> Lis
         text = page.get_text("text")
         text_chunks.append(text.strip())
 
-    # Chunk main text with RecursiveCharacterTextSplitter
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=overlap)
     final_text_chunks = []
@@ -42,7 +44,11 @@ def custom_chunk_document_pdf(pdf_path: str, chunk_size=500, overlap=100) -> Lis
     return final_text_chunks + table_chunks
 
 
-def embed_and_store_chunks(doc_id, pdf_path: str, collection):
+def embed_and_store_chunks(
+    doc_id: str, 
+    pdf_path: str, 
+    collection: chromadb.Collection
+) -> None:
     """
     Embeds document chunks and stores them in Chroma DB.
 
@@ -52,16 +58,15 @@ def embed_and_store_chunks(doc_id, pdf_path: str, collection):
     """
 
     chunks = custom_chunk_document_pdf(pdf_path)
-
     for idx, chunk in enumerate(chunks):
         embedding = openai.embeddings.create(
             input=chunk,
             model="text-embedding-ada-002"
         ).data[0].embedding  # Instead of generating embeddings manually, use the embedding function
         collection.add(
-            ids=[f"{doc_id}_{idx}"],  # Unique ID for each chunk
-            documents=[chunk],  # The document chunk to store
+            ids=[f"{doc_id}_{idx}"],            # Unique ID for each chunk
             # The embedding of the chunk# Use the OpenAI embedding function
+            documents=[chunk],
             embeddings=[embedding]
         )
 
@@ -79,6 +84,7 @@ if __name__ == "__main__":
     collection_name = args.collection_name
     if collection_name == "generate":
         collection_name = f"collection-{int(time())}"
+
     collection = client.get_or_create_collection(name=collection_name,
                                                  # l2 is the default
                                                  metadata={

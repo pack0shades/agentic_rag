@@ -6,9 +6,9 @@ import time
 from cross_verifier import cross_verify
 from dotenv import load_dotenv
 from test import query, context, query2, context2
+import requests
 
 load_dotenv()
-print(os.getenv("WORKSPACE_DIR"))
 
 
 def get_agents():
@@ -20,76 +20,71 @@ def get_agents():
     )
 
     # Define custom system prompts for each social media platform
-    REVENUE_AGENT_SYS_PROMPT = """
-    Extract revenue-related information from a retrieved financial report context, providing detailed insights and relevant data points. The report should be summarized to highlight key revenue metrics, including but not limited to: total revenue, revenue growth rate, revenue by segment, and other relevant financial metrics. The extracted information should be accurately interpreted and presented in a clear and concise manner.
+    EXTRACTOR_AGENT_SYS_PROMPT = """
+    You are an Extractor Agent. Your task is to meticulously analyze the provided contract text and extract specific information based on the given instructions.  Do not interpret or summarize, only extract.
     """
 
-    INCOME_TAX_AGENT_SYS_PROMPT = """
-    Extract all relevant information regarding income tax from a context of financial reports. Please provide a detailed summary of the information extracted, including but not limited to: tax rates, tax liabilities, tax credits, and any other relevant details. Note: Please consider the context of the 10-K reports and identify the specific sections or parts that are most relevant to income tax information. Make sure to extract accurate and concise information.
+    CLASSIFIER_AGENT_SYS_PROMPT = """
+    You are a Classifier Agent. Your task is to analyze the provided contract text and classify it based on its type and identify key legal concepts present.  Provide a concise classification and a list of relevant legal concepts with brief explanations.
     """
 
-    LEGALITY_AGENT_SYS_PROMPT = """
-    Extract relevant legal proceeding information from financial reports context.
+    SUMMARIZER_AGENT_SYS_PROMPT = """
+    You are a Summarizer Agent. Your task is to create a concise summary of the provided contract, focusing on the key obligations and rights of each party involved. Avoid legal jargon and use plain language.
     """
 
-    ASSETS_AGENT_SYS_PROMPT = """
-    Provide information about the company's assets, specifically those listed in the financial report, which I assume is a publicly available annual report filed with the Securities and Exchange Commission. Use the context from the 10-K report to provide details about the company's assets, including their nature, value, and any relevant information provided in the report. Please provide this information in a concise and organized manner.
+    QA_AGENT_SYS_PROMPT = """
+    You are a QA Agent. You will receive a query and structured information extracted from a contract by other agents. Use this information to answer the query accurately and concisely.  If the information provided is insufficient to answer the query, state "Insufficient Information."
     """
 
-    SHARES_AGENT_SYS_PROMPT = """
-    Provide information about the shares, stocks, and equity of a company from the financial report. Please use the information retrieved from the company's 10-K report for [Company Name] (e.g., [link to 10-K report] or a similar publicly available filing) to answer the following questions: [Insert specific questions about shares, stocks, and equity, e.g. 'What is the company's total share count?', 'What is the market capitalization of the company?', 'How many outstanding shares does the company have?
+    RISK_ASSES_AGENT_SYS_PROMPT = """
+    You are a Risk Assessment Agent. Analyze the provided contract text and identify potential legal risks and liabilities for each party involved. Prioritize clarity and conciseness in your output.
     """
 
     # Initialize your agents for different social media platforms
     agents = [
         Agent(
-            agent_name="Revenue-Agent",
-            system_prompt=REVENUE_AGENT_SYS_PROMPT,
+            agent_name="Extractor-Agent",
+            system_prompt=EXTRACTOR_AGENT_SYS_PROMPT,
             llm=model,
             max_loops=1,
             dynamic_temperature_enabled=True,
-            saved_state_path="Revenue_agent.json",
-            user_name="swarm_corp",
+            saved_state_path="Extractor_agent.json",
             retry_attempts=1,
         ),
         Agent(
-            agent_name="Income-Tax-Agent",
-            system_prompt=INCOME_TAX_AGENT_SYS_PROMPT,
+            agent_name="Classifier-Agent",
+            system_prompt=CLASSIFIER_AGENT_SYS_PROMPT,
             llm=model,
             max_loops=1,
             dynamic_temperature_enabled=True,
-            saved_state_path="Income_tax_agent.json",
-            user_name="swarm_corp",
+            saved_state_path="Classifier_agent.json",
             retry_attempts=1,
         ),
         Agent(
-            agent_name="Legality-Agent",
-            system_prompt=LEGALITY_AGENT_SYS_PROMPT,
+            agent_name="Summarizer-Agent",
+            system_prompt=SUMMARIZER_AGENT_SYS_PROMPT,
             llm=model,
             max_loops=1,
             dynamic_temperature_enabled=True,
-            saved_state_path="Legality_agent.json",
-            user_name="swarm_corp",
+            saved_state_path="Summarizer_agent.json",
             retry_attempts=1,
         ),
         Agent(
-            agent_name="Assets-Agent",
-            system_prompt=ASSETS_AGENT_SYS_PROMPT,
+            agent_name="QA-Agent",
+            system_prompt=QA_AGENT_SYS_PROMPT,
             llm=model,
             max_loops=1,
             dynamic_temperature_enabled=True,
             saved_state_path="Assets_agent.json",
-            user_name="swarm_corp",
             retry_attempts=1,
         ),
         Agent(
-            agent_name="Shares-Agent",
-            system_prompt=SHARES_AGENT_SYS_PROMPT,
+            agent_name="Risk_Asses-Agent",
+            system_prompt=RISK_ASSES_AGENT_SYS_PROMPT,
             llm=model,
             max_loops=1,
             dynamic_temperature_enabled=True,
             saved_state_path="Shares_agent.json",
-            user_name="swarm_corp",
             retry_attempts=1,
         ),
     ]
@@ -127,29 +122,29 @@ def get_agents():
     )
 
     ROUTER_PROMPT = '''Provide a list of recommendations for the most suitable agents from the given system prompts of 5 agents, based on their characteristics and capabilities, to best match and fulfill the query.
-                        Agent name : revenue_agent
-                        REVENUE_AGENT_SYS_PROMPT = """
-                        Extract revenue-related information from a retrieved financial report context, providing detailed insights and relevant data points. The report should be summarized to highlight key revenue metrics, including but not limited to: total revenue, revenue growth rate, revenue by segment, and other relevant financial metrics. The extracted information should be accurately interpreted and presented in a clear and concise manner.
+                        Agent name : extractor_agent
+                        EXTRACTOR_AGENT_SYS_PROMPT = """
+                        You are an Extractor Agent. Your task is to meticulously analyze the provided contract text and extract specific information based on the given instructions.  Do not interpret or summarize, only extract.
                         """
                         
-                        Agent name : income_tax_agent
-                        INCOME_TAX_AGENT_SYS_PROMPT = """
-                        Extract all relevant information regarding income tax from a context of financial reports. Please provide a detailed summary of the information extracted, including but not limited to: tax rates, tax liabilities, tax credits, and any other relevant details. Note: Please consider the context of the 10-K reports and identify the specific sections or parts that are most relevant to income tax information. Make sure to extract accurate and concise information.
+                        Agent name : classifier_agent
+                        CLASSIFIER_AGENT_SYS_PROMPT = """
+                        You are a Classifier Agent. Your task is to analyze the provided contract text and classify it based on its type and identify key legal concepts present.  Provide a concise classification and a list of relevant legal concepts with brief explanations.
                         """
 
-                        Agent name : legalility_agent
-                        LEGALITY_AGENT_SYS_PROMPT = """
-                        Extract relevant legal proceeding information from financial reports context.
+                        Agent name : summarizer_agent
+                        SUMMARIZER_AGENT_SYS_PROMPT = """
+                        You are a Summarizer Agent. Your task is to create a concise summary of the provided contract, focusing on the key obligations and rights of each party involved. Avoid legal jargon and use plain language.
                         """
 
-                        Agent name : assets_agent
-                        ASSETS_AGENT_SYS_PROMPT = """
-                        Provide information about the company's assets, specifically those listed in the financial report, which I assume is a publicly available annual report filed with the Securities and Exchange Commission. Use the context from the 10-K report to provide details about the company's assets, including their nature, value, and any relevant information provided in the report. Please provide this information in a concise and organized manner.
+                        Agent name : qa_agent
+                        QA_AGENT_SYS_PROMPT = """
+                        You are a QA Agent. You will receive a query and structured information extracted from a contract by other agents. Use this information to answer the query accurately and concisely.  If the information provided is insufficient to answer the query, state "Insufficient Information."
                         """
 
-                        Agent name : share_agent
-                        SHARES_AGENT_SYS_PROMPT = """
-                        Provide information about the shares, stocks, and equity of a company from the financial report. Please use the information retrieved from the company's 10-K report for [Company Name] (e.g., [link to 10-K report] or a similar publicly available filing) to answer the following questions: [Insert specific questions about shares, stocks, and equity, e.g. 'What is the company's total share count?', 'What is the market capitalization of the company?', 'How many outstanding shares does the company have?
+                        Agent name : risk_asses_agent
+                        RISK_ASSES_AGENT_SYS_PROMPT = """
+                        You are a Risk Assessment Agent. Analyze the provided contract text and identify potential legal risks and liabilities for each party involved. Prioritize clarity and conciseness in your output.
                         """
                         Output the comma separated names of the relevant agents 
                         '''
@@ -250,8 +245,25 @@ def multi_agent(agents, meta_agent, final_agent, router, query, context):
 
     final_output = final_agent.run(
         f"Query: {query}" + f"Context: {summarised_context}")
+    
+    # print(final_output)
+    
+    human_in_the_loop = input("Do you want search the web for the query?")
 
-    return final_output
+    if(human_in_the_loop.lower() == "yes"):
+        url = "https://s.jina.ai/" + query
+
+        payload = {}
+        headers = {
+        'Authorization': 'Bearer jina_16491b29197e4d048e25e42f4b520abe2-r-Po81tdjJfE6ITP95bcrE-676'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        #print(response.text)
+        return final_agent.run(response.text)
+
+    else:
+        return final_output
 
 
 if __name__ == "__main__":
@@ -259,7 +271,7 @@ if __name__ == "__main__":
 
     agents, meta_agent, final_agent, router = get_agents()
 
-    print(multi_agent(agents, meta_agent, final_agent, router, query2, context2))
+    print(multi_agent(agents, meta_agent, final_agent, router, query, context))
 
     end = time.time()
     print(end - start)
