@@ -132,7 +132,12 @@ def eval_pipeline_(
 
 
 class EvaluationPipeline(object):
-    def __init__(self, main_pipeline, eval_function, dataset: pd.DataFrame) -> None:
+    def __init__(
+        self, 
+        main_pipeline, 
+        eval_function, 
+        dataset: pd.DataFrame
+    ) -> None:
         self.pipeline = main_pipeline
         self.eval_function = eval_function
         self.dataset = dataset
@@ -165,7 +170,9 @@ class EvaluationPipeline(object):
         results = self.pipeline(self.dataset, collection, client)
 
         if results is None:
-            logging.error(f"Pipeline did not return valid results for {filename}")
+            logging.error(
+                f"Pipeline did not return valid results for {filename}"
+            )
             return None  # Return None if results are not generated
 
         results = eval_function(results)
