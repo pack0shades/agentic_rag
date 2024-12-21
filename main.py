@@ -87,7 +87,7 @@ def pipeline(collection, reranker, query, topk):
 def main():
     print(
         f"Using Reranker: {args.use_reranker}_____number of Retrieved Docs: {args.retrieved_docs}")
-    collection, client= get_collection('collection-1731096205')
+    collection, client= get_collection()
 
     if args.use_reranker == False:
         reranker_model = None

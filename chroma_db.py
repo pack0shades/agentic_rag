@@ -18,7 +18,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def custom_chunk_document_pdf(
     pdf_path: str,
-    chunk_size=500,
+    chunk_size=1000,
     overlap=100
 ) -> List[str]:
     table_chunks = []

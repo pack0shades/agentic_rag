@@ -1,4 +1,6 @@
 import re
+from loguru import logger as logmaster
+import warnings
 import hashlib
 import openai
 from openai import OpenAI
@@ -30,16 +32,12 @@ from tqdm import tqdm
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
-logging.getLogger("uvicorn.access").setLevel(logging.WARNING)  # For FastAPI / Starlette
-logging.getLogger("werkzeug").setLevel(logging.WARNING)        # For Flask
-logging.getLogger("http.client").setLevel(logging.WARNING)     # For Python's http.client
-logging.getLogger("urllib3").setLevel(logging.WARNING)         # For urllib3, used in requests
 
 args = get_args()
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 openaiclient = OpenAI()
 
@@ -120,7 +118,7 @@ def eval_pipeline_(
         else:
             logging.error("use --pipeline argument to specify the pipeline")
             exit(0)
-            
+        logging.debug(f"Response: {res}")    
         row["context_retrived"] = context
         row["response"] = generate_response_from_context(query, context)
 
@@ -208,8 +206,8 @@ def get_collection_name(file_name: str) -> str:
     if len(collection_name) > 50:
         collection_name = collection_name[:50]
 
-    unique_suffix = hashlib.md5(file_name.encode()).hexdigest()[:10]  
-    unique_suffix = unique_suffix[:12]  + "a"
+    # unique_suffix = hashlib.md5(file_name.encode()).hexdigest()[:10]  
+    unique_suffix ="a"
     collection_name = f"{collection_name}_{unique_suffix}"
 
     return collection_name
@@ -229,7 +227,9 @@ def process_one_batch(batch: pd.DataFrame = None) -> pd.DataFrame:
     results, collection_name = result
     logging.info(f"Results for {collection_name} saved to CSV.")
     results = pd.DataFrame(results)
-    results.to_csv('results/' + collection_name + ".csv", index=False)
+    results.to_csv('results_multi_reranker/' + collection_name + ".csv", index=False)
+    print(f"saved {collection_name}")
+
     logging.info(f"sleeeping.......................")
     time.sleep(10)
     return results
@@ -241,7 +241,7 @@ def main():
     df = pd.read_csv("./cuad_qas_with_responces.csv")
     logging.info("Data loaded successfully.")
 
-    num_cores = 6
+    num_cores = 4
     logging.info(f"Number of cores being used: {num_cores}")
 
     # Create actual DataFrame batches
@@ -257,7 +257,7 @@ def main():
     # fin_acc = (final_df["results"].sum() / len(final_df)) * 100
     # logging.info(f"final accuracy : {fin_acc}")
 
-    final_df.to_csv("results/results.csv", index=False, mode='a')
+    final_df.to_csv("results_multi_reranker/results.csv", index=False, mode='a')
     logging.info("Results saved to CSV.")
 
     total_time = time.time() - start_time
